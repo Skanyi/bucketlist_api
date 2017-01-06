@@ -26,3 +26,15 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite://bucket_list_test'
+
+
+config = {
+    'production': ProductionConfig,
+    'staging': StagingConfig,
+    'testing': TestingConfig,
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'default': DevelopmentConfig
+}

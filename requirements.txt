@@ -1,6 +1,7 @@
 alembic==0.8.9
 aniso8601==1.2.0
 click==6.6
+colorama==0.3.7
 Flask==0.12
 Flask-Migrate==2.0.2
 Flask-RESTful==0.3.5
@@ -16,7 +17,9 @@ pkg-resources==0.0.0
 psycopg2==2.6.2
 python-dateutil==2.6.0
 python-editor==1.0.3
+python-termstyle==0.1.10
 pytz==2016.10
+rednose==1.2.1
 six==1.10.0
 SQLAlchemy==1.1.4
 Werkzeug==0.11.15

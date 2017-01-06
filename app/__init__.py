@@ -12,3 +12,4 @@ db = SQLAlchemy(app)
 engine = create_engine('postgresql+psycopg2://postgres:Hearty160@localhost/bucket_list')
 
 from db import models
+from app import views

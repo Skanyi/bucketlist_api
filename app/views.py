@@ -2,9 +2,9 @@ import os
 from flask import Flask
 from flask_restful import Api, Resource, reqparse, fields, marshal
 from flask_sqlalchemy import SQLAlchemy
+from app import app
 
-
-app = Flask(__name__)
+#app = Flask(__name__)
 api = Api(app)
 
 class IndexResource(Resource):
@@ -21,12 +21,12 @@ class IndexResource(Resource):
 
 class UserRegisterAPI(Resource):
     def post(self):
-        pass
+        return {'Message': 'None'}
 
 
 class UserLoginAPI(Resource):
     def post(self):
-        pass
+        return {'Message': 'None'}
 
 
 class BucketListAPI(Resource):
@@ -81,7 +81,7 @@ class BucketItemsAPI(Resource):
         pass
 
 
-api.add_resource(IndexResource, '/')
+api.add_resource(IndexResource, '/',endpoint ='index')
 api.add_resource(UserRegisterAPI, '/auth/register', endpoint='register')
 api.add_resource(UserLoginAPI, '/auth/login', endpoint='login')
 api.add_resource(BucketListAPI, '/bucketlists', endpoint='lists')
