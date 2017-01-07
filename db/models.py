@@ -7,19 +7,22 @@ Models the database classes for the api:
 
 from app import db
 from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.ext.declarative import declarative_base
 from werkzeug.security import generate_password_hash, \
      check_password_hash
 import datetime
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer)
 
-Base = declarative_base()
 
 class User(db.Model):
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String())
     password_hash = db.Column(db.String(128))
+    bucket_lists = db.relationship('BucketList',
+                                  backref='',
+                                  passive_deletes=True)
 
     def __init__(self, username, password):
         self.username = username
@@ -31,18 +34,27 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.pw_hash, password)
 
+    def generate_auth_token(self, expiration = 10000):
+        s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
+        return s.dumps({ 'id': self.id })
+
+
     def __repr__(self):
-        return '<id {}>'.format(self.id)
+        return '<user_id {}>'.format(self.user_id)
 
 class BucketList(db.Model):
     __tablename__ = 'bucketlists'
 
-    id = db.Column(db.Integer, primary_key=True)
+    bucketlist_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String())
     description = db.Column(db.String())
     date_created = db.Column(db.DateTime, server_default=db.func.now())
     date_modified = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
-
+    created_by = db.Column(db.Integer, db.ForeignKey('users.user_id',
+                                                     ondelete='CASCADE'))
+    bucketlistitems = db.relationship('BucketListItems',
+                                      backref='bucketlists',
+                                      passive_deletes=True)
     # do the relationship here that connect a user to certain bucketlist
 
     def __init__(self, title, description, date_created, date_modified):
@@ -50,28 +62,31 @@ class BucketList(db.Model):
         self.description = description
         self.date_created = date_created
         self.date_modified = date_modified
+        self.created_by = created_by
 
 
     def __repr__(self):
-        return '<id {}>'.format(self.id)
+        return '<bucketlist_id {}>'.format(self.bucketlist_id)
 
 class BucketListItems(db.Model):
     __tablename__ = 'bucketlistsitems'
 
-    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, primary_key=True)
+    bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlists.bucketlist_id',
+                                            ondelete='CASCADE'))
     title = db.Column(db.String())
     description = db.Column(db.String())
     date_created = db.Column(db.DateTime, server_default=db.func.now())
     date_modified = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
-
-    # do the relationship here that connect a bucketlistitem to certain bucketlist
+    done = db.Column(db.Boolean, default=False)
 
     def __init__(self, title, description, date_created, date_modified):
         self.title = title
         self.description = description
         self.date_created = date_created
         self.date_modified = date_modified
+        self.done = done
 
 
     def __repr__(self):
-        return '<id {}>'.format(self.id)
+        return '<item_id {}>'.format(self.item_id)

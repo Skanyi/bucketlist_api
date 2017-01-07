@@ -1,11 +1,14 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Api
 from sqlalchemy import create_engine
 import os
 
 
 app = Flask(__name__)
-#app.config.from_object(os.environ['APP_SETTINGS'])
+api = Api(app)
+
+app.config.from_object('config')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
