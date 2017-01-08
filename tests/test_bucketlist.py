@@ -10,7 +10,7 @@ from .test_api import BaseBucketListApiTest
 from db.models import BucketList
 import json
 
-class UserTest(BaseBucketListApiTest):
+class BucketListTest(BaseBucketListApiTest):
 
     def get_header(self):
         """
