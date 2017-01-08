@@ -5,7 +5,7 @@ from flask import Flask
 from flask_testing import TestCase
 from config.config import TestingConfig
 from db import models
-from db.models import User
+from db.models import User, BucketList
 from app import db, app
 import json
 
@@ -27,11 +27,6 @@ class BaseBucketListApiTest(TestCase):
         db.session.add(steve)
         db.session.commit()
         self.client = app.test_client()
-
-    def test_index_resource(self):
-        response = self.client.get('/')
-        response = json.loads(response.get_data(as_text=True))
-        self.assertIn('Message', response)
 
     def tearDown(self):
 

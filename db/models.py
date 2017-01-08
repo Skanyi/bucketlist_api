@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, \
      check_password_hash
 import datetime
 from itsdangerous import (TimedJSONWebSignatureSerializer
-                          as Serializer)
+                          as Serializer, BadSignature, SignatureExpired)
 
 
 class User(db.Model):
@@ -36,7 +36,19 @@ class User(db.Model):
 
     def generate_auth_token(self, expiration = 10000):
         s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
-        return s.dumps({ 'id': self.id })
+        return s.dumps({ 'user_id': self.user_id })
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None # valid token, but expired
+        except BadSignature:
+            return None # invalid token
+        user = User.query.get(data['user_id'])
+        return user
 
 
     def __repr__(self):
@@ -55,7 +67,7 @@ class BucketList(db.Model):
     bucketlistitems = db.relationship('BucketListItems',
                                       backref='bucketlists',
                                       passive_deletes=True)
-    # do the relationship here that connect a user to certain bucketlist
+
 
     def __init__(self, title, description, date_created, date_modified):
         self.title = title

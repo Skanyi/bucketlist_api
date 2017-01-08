@@ -31,12 +31,11 @@ class BucketListAPI(Resource):
 
     def get(self, id=None):
         '''
-        Gets all the bucketlists created: The user have an option to specify the number of results they want to get.
+        Gets all the bucketlists created by the user: The user have an option to specify the number of results they want to get.
         The default is set to 20 results and the maximum result is 100.
         The user can also search a bucketlist by name.
         Can also get a specific bucketlist by specifying the id
         '''
-        print('Awesome')
         pass
 
     def post(self):

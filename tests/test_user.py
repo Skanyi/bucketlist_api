@@ -11,14 +11,14 @@ class UserTest(BaseBucketListApiTest):
     def test_user_can_register(self):
         self.user = dict(username= 'steve', password= 'password')
         response = self.client.post('/auth/register', data=self.user)
-        self.assertEqual(response.status_code, 200)
+        self.assert200(response)
         response_data = json.loads(response.get_data(as_text=True))
         self.assertIn('Registerd', response_data)
 
     def test_user_can_login(self):
         self.user = dict(username= 'steve', password= 'password')
         response = self.client.post('/auth/login', data=self.user)
-        self.assertEqual(response.status_code, 200)
+        self.assert200(response)
         response_data = json.loads(response.get_data(as_text=True))
         self.assertIn('Succesfully', response_data)
 
