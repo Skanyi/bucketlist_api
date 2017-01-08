@@ -14,7 +14,7 @@ class IndexResource(Resource):
 
     def get(self):
         """Return a welcome message."""
-        return {'Message': 'Welcome to my api'}
+        return {'Message': 'None'}
 
 
 class UserRegisterAPI(Resource):
@@ -36,7 +36,7 @@ class BucketListAPI(Resource):
         The user can also search a bucketlist by name.
         Can also get a specific bucketlist by specifying the id
         '''
-        pass
+        return {'Message': 'None'}
 
     def post(self):
         '''

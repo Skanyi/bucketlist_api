@@ -135,17 +135,26 @@ class UserTest(BaseBucketListApiTest):
         '''
         Ensures that a user can specify the number of results they want returned
         '''
-        response = self.client.get('/bucketlists/?limit=7', headers=self.get_header())
+        response = self.client.get('/bucketlists?limit=7', headers=self.get_header())
         response = json.loads(response.get_data(as_text=True))
         self.assertLessEqual(len(response), 7)
         self.assert200(response)
 
-        response = self.client.get('/bucketlists/?limit=30', headers=self.get_header())
+        response = self.client.get('/bucketlists?limit=30', headers=self.get_header())
         response = json.loads(response.get_data(as_text=True))
         self.assertLessEqual(len(response), 30)
         self.assert200(response)
 
-
-
     def test_search_by_name(self):
-        pass
+        '''
+        Ensures that a user can search a bucketlist by its name,
+        Create a new bucketlist,
+        Search through the bucketlists and returns bucketlist that contain the search term in their title
+        '''
+        post_data = {'bucketlist_title': 'Python Language'}
+        response = self.client.post('/bucketlists', data=post_data,
+                                    headers=self.get_header())
+        # search for the bucketlist with a name
+        search_response = self.client.get('/bucketlists?q=Python', headers=self.get_header())
+        self.assertIn('Python', json.loads(search_response.get_data(as_text=True)))
+        self.assert200(search_response)
