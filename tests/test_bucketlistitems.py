@@ -42,7 +42,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
                                     headers=self.get_header())
         self.assertEqual(response.status_code, 201)
         response_data = json.loads(response.get_data(as_text=True))
-        self.assertIn(post_data['item'], response_data)
+        self.assertIn(post_data['item'], response_data['message'])
 
     def test_post_invalid_bucketlistitem(self):
         '''
@@ -69,7 +69,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
                                         headers=self.get_header())
         self.assertEqual(put_response.status_code, 200)
         put_response_data = json.loads(put_response.get_data(as_text=True))
-        self.assertIn(put_data['item'], put_response_data)
+        self.assertIn(put_data['item'], put_response_data['message'])
 
     def test_invalid_put_bucketlistitem(self):
         '''
@@ -97,7 +97,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
         self.assertEqual(post_response.status_code, 201)
         delete_response = self.client.delete('/bucketlists/1/items/1',
                                                 headers=self.get_header())
-        self.assertTrue(delete_response.status_code == 200)
+        self.assertTrue(delete_response.status_code == 204)
         self.assertIn('{}\n', delete_response.get_data(as_text=True))
 
     def test_bucketlist_delete_not_found(self):

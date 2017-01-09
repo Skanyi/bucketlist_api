@@ -14,35 +14,26 @@ class IndexResource(Resource):
 
     def get(self):
         """Return a welcome message."""
-        return {'Message': 'None'}
+        return {'message': 'None'}
 
 
 class UserRegisterAPI(Resource):
     def post(self):
-        return {'Message': 'None'}
+        return {'message': 'None'}
 
 
 class UserLoginAPI(Resource):
     def post(self):
-        return {'Message': 'None'}
+        return {'message': 'None'}
 
 
 class BucketListAPI(Resource):
 
-    def get(self, id=None):
+    def get(self, id):
         '''
-        Gets all the bucketlists created by the user: The user have an option to specify the number of results they want to get.
-        The default is set to 20 results and the maximum result is 100.
-        The user can also search a bucketlist by name.
         Can also get a specific bucketlist by specifying the id
         '''
-        return {'Message': 'None'}, 200
-
-    def post(self):
-        '''
-        Creates a new bucketlist
-        '''
-        pass
+        return {'message': 'None'}, 200
 
     def put(self, id):
         '''
@@ -56,6 +47,21 @@ class BucketListAPI(Resource):
         '''
         pass
 
+class BucketListRootAPI(Resource):
+
+    def get(self):
+        '''
+        Gets all the bucketlists created by the user: The user have an option to specify the number of results they want to get.
+        The default is set to 20 results and the maximum result is 100.
+        The user can also search a bucketlist by name.
+        '''
+        return {'message': 'None'}, 200
+
+    def post(self):
+        '''
+        Creates a new bucketlist
+        '''
+        pass
 
 class BucketListItemsAPI(Resource):
 
@@ -63,25 +69,25 @@ class BucketListItemsAPI(Resource):
         '''
         Creates a new item in a specific bucketlist
         '''
-        return {'Message': 'None'}, 201
+        return {'message': 'None'}, 201
 
     def put(self, id, item_id):
         '''
         Edits a specific item in a bucketlist
         '''
-        return {'Message': 'None'}, 200
+        return {'message': 'None'}, 200
 
     def delete(self, id, item_id):
         '''
         Deletes a specific item in a bucketlist
         '''
-        return {'Message': 'None'}, 200
+        return {'message': 'None'}, 200
 
 
 api.add_resource(IndexResource, '/',endpoint ='index')
 api.add_resource(UserRegisterAPI, '/auth/register', endpoint='register')
 api.add_resource(UserLoginAPI, '/auth/login', endpoint='login')
-api.add_resource(BucketListAPI, '/bucketlists', endpoint='lists')
+api.add_resource(BucketListRootAPI, '/bucketlists', endpoint='lists')
 api.add_resource(BucketListAPI, '/bucketlists/<int:id>', endpoint='list')
 api.add_resource(BucketListItemsAPI, '/bucketlists/<int:id>/items', endpoint='items')
 api.add_resource(BucketListItemsAPI, '/bucketlists/<int:id>/items/<int:item_id>', endpoint='item')

@@ -14,4 +14,4 @@ class ResourcesTest(BaseBucketListApiTest):
 
     def test_no_auth(self):
         response = self.client.get('/bucketlists')
-        self.assertTrue(response.status_code == 403)
+        self.assertTrue(response.status_code == 401)

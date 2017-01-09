@@ -32,11 +32,11 @@ class BucketListTest(BaseBucketListApiTest):
         Ensures that a valid POST request to /bucketlists
         will create a new bucketlist.
         '''
-        post_data = {'bucketlist_title': 'Hiking'}
+        post_data = {'title': 'Hiking'}
         response = self.client.post('/bucketlists', data=post_data,
                                     headers=self.get_header())
         self.assertEqual(response.status_code, 201)
-        self.assertIn(post_data['bucketlist_title'], response.get_data(as_text=True))
+        self.assertIn(post_data['title'], response.get_data(as_text=True))
 
     def test_post_invalid_bucketlist(self):
         '''
@@ -53,38 +53,38 @@ class BucketListTest(BaseBucketListApiTest):
         Ensures that a valid PUT request to /bucketlists/<id>
         will edit and update the bucketlist in the database
         '''
-        post_data = {'bucketlist_title': 'Chelsea FC'}
+        post_data = {'title': 'Chelsea FC'}
         response = self.client.post('/bucketlists', data=post_data,
                                     headers=self.get_header())
-        put_data = {'bucketlist_title': 'Chelsea FC Players'}
+        put_data = {'title': 'Chelsea FC Players'}
         response = self.client.put('/bucketlists/1', data=put_data,
                                     headers=self.get_header())
-        self.assertTrue(response.status_code == 201)
-        self.assertIn(put_data['bucketlist_title'], response.get_data(as_text=True))
+        self.assertTrue(response.status_code == 200)
+        self.assertIn(put_data['title'], response.get_data(as_text=True))
 
     def test_invalid_put_bucketlist(self):
         '''
         Ensures that a invalid PUT request to /bucketlists/<id>
         will not edit and update the bucketlist in the database but insteade return a 204: No Content
         '''
-        post_data = {'bucketlist_title': 'Chelsea FC'}
+        post_data = {'title': 'Chelsea FC'}
         response = self.client.post('/bucketlists', data=post_data,
                                     headers=self.get_header())
         put_data = {}
         response = self.client.put('/bucketlists/1', data=put_data,
                                     headers=self.get_header())
-        self.assertEqual(response, 204)
+        self.assert400(response)
 
     def test_delete_bucketlist(self):
         '''Ensures that a valid Delete request to /bucketlists/<id>
         will delete the bucket list from the database
         '''
-        post_data = {'bucketlist_title': 'Chelsea FC'}
+        post_data = {'title': 'Chelsea FC'}
         response = self.client.post('/bucketlists', data=post_data,
                                     headers=self.get_header())
         response = self.client.delete('/bucketlists/1',
                                     headers=self.get_header())
-        self.assertTrue(response.status_code == 200)
+        self.assertTrue(response.status_code == 204)
         self.assertIn('{}\n', response.get_data(as_text=True))
 
     def test_bucketlist_delete_not_found(self):
@@ -110,14 +110,14 @@ class BucketListTest(BaseBucketListApiTest):
         angie_token = response_data.get('Authorization')
 
         # create a bucketlist with user steve
-        post_data = {'bucketlist_title': 'I Love Python'}
+        post_data = {'title': 'I Love Python'}
         self.client.post('/bucketlists', data=post_data,
                                     headers=self.get_header())
 
         # Access the bucket list with user angie
         response = self.client.get('/bucketlists/1', headers={'Authorization': angie_token})
         response_data = json.loads(response.get_data(as_text=True))
-        self.assertEqual({'Message': 'bucketlist was not found.'}, response_data)
+        self.assertIn('bucketlist was not found', response_data['message'])
         self.assert404(response)
 
     def test_unauthenticated_access(self):
@@ -135,14 +135,20 @@ class BucketListTest(BaseBucketListApiTest):
         '''
         Ensures that a user can specify the number of results they want returned
         '''
-        response = self.client.get('/bucketlists?limit=7', headers=self.get_header())
-        data = json.loads(response.get_data(as_text=True))
-        self.assertEqual(len(data), 7)
-        self.assert200(response)
+        post_data1 = {'title': 'Python Language'}
+        response = self.client.post('/bucketlists', data=post_data1,
+                                    headers=self.get_header())
+        post_data2 = {'title': 'I Love Python'}
+        self.client.post('/bucketlists', data=post_data2,
+                                    headers=self.get_header())
+        post_data3 = {'title': 'Chelsea FC'}
+        response = self.client.post('/bucketlists', data=post_data3,
+                                    headers=self.get_header())
 
-        response = self.client.get('/bucketlists?limit=30', headers=self.get_header())
+        response = self.client.get('/bucketlists?limit=2', headers=self.get_header())
         data = json.loads(response.get_data(as_text=True))
-        self.assertEqual(len(data), 30)
+        print(data)
+        self.assertEqual(len(data), 2)
         self.assert200(response)
 
     def test_search_by_name(self):
@@ -151,10 +157,15 @@ class BucketListTest(BaseBucketListApiTest):
         Create a new bucketlist,
         Search through the bucketlists and returns bucketlist that contain the search term in their title
         '''
-        post_data = {'bucketlist_title': 'Python Language'}
+        post_data = {'title': 'Python Language'}
         response = self.client.post('/bucketlists', data=post_data,
                                     headers=self.get_header())
-        # search for the bucketlist with a name
+        post_data3 = {'title': 'Chelsea FC'}
+        response = self.client.post('/bucketlists', data=post_data3,
+                                    headers=self.get_header())
+        # search for the bucketlist with a name Python
         search_response = self.client.get('/bucketlists?q=Python', headers=self.get_header())
-        self.assertIn('Python', json.loads(search_response.get_data(as_text=True)))
+        search_response_data = json.loads(search_response.get_data(as_text=True))
+        self.assertIn('Python', search_response_data['message'])
+        self.assertNotIn('Chelsea', search_response_data['message'])
         self.assert200(search_response)

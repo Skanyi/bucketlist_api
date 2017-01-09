@@ -7,7 +7,7 @@ class Config(object):
     TESTING = False
     CSRF_ENABLED = True
     SECRET_KEY = 'ssssssssssssssssssssuuuuuuuuuuuuuuuuuuutttttttttttttttffffff666668778999'
-    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:Hearty160@localhost/bucket_list'
 
 
 class ProductionConfig(Config):

@@ -1,5 +1,6 @@
 ''' Initiliaze API tests cases:
-        setup the tests for the api everytime they are run'''
+    setup the tests for the api everytime they are run
+'''
 
 from flask import Flask
 from flask_testing import TestCase
@@ -15,7 +16,7 @@ class BaseBucketListApiTest(TestCase):
     def create_app(self):
 
         app = Flask(__name__)
-        app.config['TESTING'] = True
+        app.config.from_object(TestingConfig)
         return app
 
     def setUp(self):
