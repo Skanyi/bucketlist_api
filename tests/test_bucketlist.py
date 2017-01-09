@@ -35,7 +35,7 @@ class BucketListTest(BaseBucketListApiTest):
         post_data = {'bucketlist_title': 'Hiking'}
         response = self.client.post('/bucketlists', data=post_data,
                                     headers=self.get_header())
-        self.assertTrue(response.status_code == 201)
+        self.assertEqual(response.status_code, 201)
         self.assertIn(post_data['bucketlist_title'], response.get_data(as_text=True))
 
     def test_post_invalid_bucketlist(self):
@@ -65,7 +65,7 @@ class BucketListTest(BaseBucketListApiTest):
     def test_invalid_put_bucketlist(self):
         '''
         Ensures that a invalid PUT request to /bucketlists/<id>
-        will not edit and update the bucketlist in the database but insteade return a 400: Bad Request
+        will not edit and update the bucketlist in the database but insteade return a 204: No Content
         '''
         post_data = {'bucketlist_title': 'Chelsea FC'}
         response = self.client.post('/bucketlists', data=post_data,
@@ -73,7 +73,7 @@ class BucketListTest(BaseBucketListApiTest):
         put_data = {}
         response = self.client.put('/bucketlists/1', data=put_data,
                                     headers=self.get_header())
-        self.assert400(response)
+        self.assertEqual(response, 204)
 
     def test_delete_bucketlist(self):
         '''Ensures that a valid Delete request to /bucketlists/<id>
@@ -90,10 +90,10 @@ class BucketListTest(BaseBucketListApiTest):
     def test_bucketlist_delete_not_found(self):
         '''
         Ensure that Delete request to /bucketlists/<id>
-        will result in a status code of 404 when an object
+        will result to a status code of 404 when a bucketlist
         with that ID does NOT exist.
         '''
-        response = self.client.delete('/bucketlists/9080000')
+        response = self.client.delete('/bucketlists/9080000', headers=self.get_header())
         self.assert404(response)
 
     def test_unauthorized_access(self):
@@ -116,8 +116,8 @@ class BucketListTest(BaseBucketListApiTest):
 
         # Access the bucket list with user angie
         response = self.client.get('/bucketlists/1', headers={'Authorization': angie_token})
-        response = json.loads(response.get_data(as_text=True))
-        self.assertEqual({'Message': 'bucketlist was not found.'}, response)
+        response_data = json.loads(response.get_data(as_text=True))
+        self.assertEqual({'Message': 'bucketlist was not found.'}, response_data)
         self.assert404(response)
 
     def test_unauthenticated_access(self):
@@ -136,13 +136,13 @@ class BucketListTest(BaseBucketListApiTest):
         Ensures that a user can specify the number of results they want returned
         '''
         response = self.client.get('/bucketlists?limit=7', headers=self.get_header())
-        response = json.loads(response.get_data(as_text=True))
-        self.assertLessEqual(len(response), 7)
+        data = json.loads(response.get_data(as_text=True))
+        self.assertEqual(len(data), 7)
         self.assert200(response)
 
         response = self.client.get('/bucketlists?limit=30', headers=self.get_header())
-        response = json.loads(response.get_data(as_text=True))
-        self.assertLessEqual(len(response), 30)
+        data = json.loads(response.get_data(as_text=True))
+        self.assertEqual(len(data), 30)
         self.assert200(response)
 
     def test_search_by_name(self):

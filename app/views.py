@@ -36,7 +36,7 @@ class BucketListAPI(Resource):
         The user can also search a bucketlist by name.
         Can also get a specific bucketlist by specifying the id
         '''
-        return {'Message': 'None'}
+        return {'Message': 'None'}, 200
 
     def post(self):
         '''
@@ -57,25 +57,25 @@ class BucketListAPI(Resource):
         pass
 
 
-class BucketItemsAPI(Resource):
+class BucketListItemsAPI(Resource):
 
-    def post(self):
+    def post(self, id):
         '''
         Creates a new item in a specific bucketlist
         '''
-        pass
+        return {'Message': 'None'}, 201
 
-    def put(self, id):
+    def put(self, id, item_id):
         '''
         Edits a specific item in a bucketlist
         '''
-        pass
+        return {'Message': 'None'}, 200
 
-    def delete(self, id):
+    def delete(self, id, item_id):
         '''
         Deletes a specific item in a bucketlist
         '''
-        pass
+        return {'Message': 'None'}, 200
 
 
 api.add_resource(IndexResource, '/',endpoint ='index')
@@ -83,4 +83,5 @@ api.add_resource(UserRegisterAPI, '/auth/register', endpoint='register')
 api.add_resource(UserLoginAPI, '/auth/login', endpoint='login')
 api.add_resource(BucketListAPI, '/bucketlists', endpoint='lists')
 api.add_resource(BucketListAPI, '/bucketlists/<int:id>', endpoint='list')
-api.add_resource(BucketItemsAPI, '/bucketlists/<int:id>/<int:item_id>', endpoint='item')
+api.add_resource(BucketListItemsAPI, '/bucketlists/<int:id>/items', endpoint='items')
+api.add_resource(BucketListItemsAPI, '/bucketlists/<int:id>/items/<int:item_id>', endpoint='item')

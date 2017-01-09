@@ -10,7 +10,7 @@ class ResourcesTest(BaseBucketListApiTest):
     def test_index_resource(self):
         response = self.client.get('/')
         response = json.loads(response.get_data(as_text=True))
-        self.assertIn('Message', response)
+        self.assertIn('Welcome', response)
 
     def test_no_auth(self):
         response = self.client.get('/bucketlists')
