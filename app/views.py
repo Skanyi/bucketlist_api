@@ -3,7 +3,7 @@ from flask import Flask
 from flask_restful import Resource, reqparse, fields, marshal
 from flask_sqlalchemy import SQLAlchemy
 from app import app, api, db
-from .models import User, BucketList
+from .models import User, BucketList, BucketListItems
 from flask_httpauth import HTTPBasicAuth
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
@@ -180,12 +180,29 @@ class BucketListRootAPI(Resource):
         return {'message': '%s has been succesfully created' % title}
 
 class BucketListItemsAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('title', type = str, required = True,
+            help = 'title cannot be blank', location = 'json')
+        self.reqparse.add_argument('done', type = bool, location = 'json')
+        super(BucketListItemsAPI, self).__init__()
 
     def post(self, bucketlist_id):
         '''
         Creates a new item in a specific bucketlist
         '''
-        return {'message': 'None'}, 201
+        user_id = current_user['user_id']
+        args = self.reqparse.parse_args()
+        title = args['title']
+
+        # testing if the bucketlistitems title exists for this user
+        if BucketListItems.query.filter_by(title = title).first() is not None:
+            return {'message': 'Bucketlistitem name %s already exists' % title}
+        new_bucketlistitem = BucketListItems(title = title)
+        db.session.add(new_bucketlistitem)
+        db.session.commit()
+        return {'message': '%s has been succesfully created' % title}
+
 
     def put(self, bucketlist_id, item_id):
         '''

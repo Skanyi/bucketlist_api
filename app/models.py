@@ -75,12 +75,8 @@ class BucketListItems(db.Model):
     date_modified = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
     done = db.Column(db.Boolean, default=False)
 
-    def __init__(self, title, description):
+    def __init__(self, title):
         self.title = title
-        self.description = description
-        self.date_created = date_created
-        self.date_modified = date_modified
-        self.done = done
 
 
     def __repr__(self):

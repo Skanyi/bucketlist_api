@@ -14,8 +14,8 @@ class BucketListItemsTest(BaseBucketListApiTest):
         Returns:
             request header with token
         """
-        self.user = dict(username= 'steve', password= 'password')
-        response_login = self.client.post('/auth/login', data=self.user)
+        user = {"username": "kanyi", "password": "chelsea"}
+        response_login = self.client.post('/auth/login', data=json.dumps(user))
         response_data = json.loads(response_login.get_data(as_text=True))
         token = response_data.get('Authorization')
         return {'Authorization': token,
@@ -26,7 +26,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
         Creates a bucketlist that will be used to test if items can be created on it
         '''
         post_data = {'title': 'Programming Language'}
-        response = self.client.post('/bucketlists', data=post_data,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data),
                         headers=self.get_header())
         if response.status_code == 200:
             return True
@@ -38,7 +38,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
         '''
         self.add_bucketlist()
         post_data = {'item': 'Python', 'done': False}
-        response = self.client.post('/bucketlists/1/items', data=post_data,
+        response = self.client.post('/bucketlists/1/items', data=json.dumps(post_data),
                                     headers=self.get_header())
         self.assertEqual(response.status_code, 201)
         response_data = json.loads(response.get_data(as_text=True))
@@ -51,7 +51,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
         '''
         self.add_bucketlist()
         post_data = {'done': False}
-        response = self.client.post('/bucketlists', data=post_data,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data),
                                     headers=self.get_header())
         self.assert400(response)
 
@@ -61,11 +61,11 @@ class BucketListItemsTest(BaseBucketListApiTest):
         '''
         self.add_bucketlist()
         post_data = {'item': 'Python', 'done': False}
-        post_response = self.client.post('/bucketlists/1/items', data=post_data,
+        post_response = self.client.post('/bucketlists/1/items', data=json.dumps(post_data),
                                     headers=self.get_header())
         self.assertEqual(post_response.status_code, 201)
         put_data = {'item': 'Javascript', 'done': False}
-        put_response = self.client.put('/bucketlists/1/items/1', data=put_data,
+        put_response = self.client.put('/bucketlists/1/items/1', data=json.dumps(put_data),
                                         headers=self.get_header())
         self.assertEqual(put_response.status_code, 200)
         put_response_data = json.loads(put_response.get_data(as_text=True))
@@ -73,15 +73,15 @@ class BucketListItemsTest(BaseBucketListApiTest):
 
     def test_invalid_put_bucketlistitem(self):
         '''
-        Ensures that a invalid PUT request to /bucketlists/<id>/items/<item_id>
+        Ensures that a invalid PUT request to /bucketlists/<bucketlist_id>/items/<item_id>
         will not edit and update the bucketlistitem in the database but insteade return a 204: No Content
         '''
         self.add_bucketlist()
         post_data = {'item': 'Chelsea FC', 'done': False}
-        response = self.client.post('/bucketlists/1/items', data=post_data,
+        response = self.client.post('/bucketlists/1/items', data=json.dumps(post_data),
                                     headers=self.get_header())
         put_data = {}
-        response = self.client.put('/bucketlists/1/items/1', data=put_data,
+        response = self.client.put('/bucketlists/1/items/1', data=json.dumps(put_data),
                                     headers=self.get_header())
         self.assertEqual(response, 204)
 
@@ -92,7 +92,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
         '''
         self.add_bucketlist()
         post_data = {'item': 'Python', 'done': False}
-        post_response = self.client.post('/bucketlists/1/items', data=post_data,
+        post_response = self.client.post('/bucketlists/1/items', data=json.dumps(post_data),
                                     headers=self.get_header())
         self.assertEqual(post_response.status_code, 201)
         delete_response = self.client.delete('/bucketlists/1/items/1',
