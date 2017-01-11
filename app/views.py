@@ -2,7 +2,8 @@ import os
 from flask import Flask
 from flask_restful import Resource, reqparse, fields, marshal
 from flask_sqlalchemy import SQLAlchemy
-from app import app, api
+from app import app, api, db
+from .models import User
 
 
 class IndexResource(Resource):
@@ -14,17 +15,53 @@ class IndexResource(Resource):
 
     def get(self):
         """Return a welcome message."""
-        return {'message': 'None'}
+        return {'message': 'Welcome to my Bucketlist Api'}
 
 
 class UserRegisterAPI(Resource):
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('username', type = str, required = True,
+            help = 'username cannot be blank', location = 'json')
+        self.reqparse.add_argument('password', required = True,
+            help = 'password cannot be blank', location = 'json')
+        super(UserRegisterAPI, self).__init__()
+
     def post(self):
-        return {'message': 'None'}
+        args = self.reqparse.parse_args()
+        username = args['username']
+        password = args['password']
+
+        # testing if a user exists
+        if User.query.filter_by(username = username).first() is not None:
+            return {'message': 'invalid username or password'}
+        user = User(username = username, password=password )
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        return {'message': '%s has been succesfully registered' % username}
 
 
 class UserLoginAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('username', type = str, required = True,
+            help = 'username cannot be blank', location = 'json')
+        self.reqparse.add_argument('password', required = True,
+            help = 'password cannot be blank', location = 'json')
+        super(UserLoginAPI, self).__init__()
+
     def post(self):
-        return {'message': 'None'}
+        args = self.reqparse.parse_args()
+        username = args['username']
+        password = args['password']
+        # testing if a user details are correct
+        user = User.query.filter_by(username = username).first()
+        if user and user.check_password(password):
+            return {'message': '%s has been succesfully logged in' % username}
+        return {'message': 'invalid username or password'}
+
 
 
 class BucketListAPI(Resource):
@@ -82,12 +119,3 @@ class BucketListItemsAPI(Resource):
         Deletes a specific item in a bucketlist
         '''
         return {'message': 'None'}, 200
-
-
-api.add_resource(IndexResource, '/',endpoint ='index')
-api.add_resource(UserRegisterAPI, '/auth/register', endpoint='register')
-api.add_resource(UserLoginAPI, '/auth/login', endpoint='login')
-api.add_resource(BucketListRootAPI, '/bucketlists', endpoint='lists')
-api.add_resource(BucketListAPI, '/bucketlists/<int:id>', endpoint='list')
-api.add_resource(BucketListItemsAPI, '/bucketlists/<int:id>/items', endpoint='items')
-api.add_resource(BucketListItemsAPI, '/bucketlists/<int:id>/items/<int:item_id>', endpoint='item')

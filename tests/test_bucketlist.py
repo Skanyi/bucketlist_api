@@ -7,7 +7,7 @@ Test that a user can search a bucketlist by its name
 '''
 
 from .test_api import BaseBucketListApiTest
-from db.models import BucketList
+from app.models import BucketList
 import json
 
 class BucketListTest(BaseBucketListApiTest):
@@ -147,7 +147,6 @@ class BucketListTest(BaseBucketListApiTest):
 
         response = self.client.get('/bucketlists?limit=2', headers=self.get_header())
         data = json.loads(response.get_data(as_text=True))
-        print(data)
         self.assertEqual(len(data), 2)
         self.assert200(response)
 

@@ -19,7 +19,7 @@ class User(db.Model):
 
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String())
-    password_hash = db.Column(db.String(128))
+    pw_hash = db.Column(db.String(128))
     bucket_lists = db.relationship('BucketList',
                                   backref='',
                                   passive_deletes=True)

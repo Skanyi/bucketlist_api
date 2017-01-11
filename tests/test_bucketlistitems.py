@@ -3,7 +3,7 @@ Test that a user can create, edit and delete a bucketlistitem,
 '''
 
 from .test_api import BaseBucketListApiTest
-from db.models import BucketListItems
+from app.models import BucketListItems
 import json
 
 class BucketListItemsTest(BaseBucketListApiTest):
@@ -25,7 +25,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
         '''
         Creates a bucketlist that will be used to test if items can be created on it
         '''
-        post_data = {'bucketlist_title': 'Programming Language'}
+        post_data = {'title': 'Programming Language'}
         response = self.client.post('/bucketlists', data=post_data,
                         headers=self.get_header())
         if response.status_code == 200:
@@ -77,7 +77,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
         will not edit and update the bucketlistitem in the database but insteade return a 204: No Content
         '''
         self.add_bucketlist()
-        post_data = {'bucketlist_title': 'Chelsea FC', 'done': False}
+        post_data = {'item': 'Chelsea FC', 'done': False}
         response = self.client.post('/bucketlists/1/items', data=post_data,
                                     headers=self.get_header())
         put_data = {}

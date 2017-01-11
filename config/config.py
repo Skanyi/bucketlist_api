@@ -27,14 +27,13 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'bucket_list_test.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite://'
 
-
-config = {
+configuration = {
     'production': ProductionConfig,
     'staging': StagingConfig,
     'testing': TestingConfig,
     'development': DevelopmentConfig,
     'testing': TestingConfig,
-    'default': DevelopmentConfig
+    'default': Config
 }
