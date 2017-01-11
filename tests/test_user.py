@@ -29,8 +29,7 @@ class UserTest(BaseBucketListApiTest):
         response = self.client.post('/auth/login', data=json.dumps(user), content_type='application/json')
         self.assert200(response)
         response_data = json.loads(response.get_data(as_text=True))
-        self.assertIn('message', response_data)
-        self.assertIn('succesfully logged in', response_data['message'])
+        self.assertIn('Authorization', response_data)
 
     def test_user_cannot_login_with_wrong_username(self):
         user1 = {"username": "kanyi", "password": "password"}

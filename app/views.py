@@ -3,7 +3,30 @@ from flask import Flask
 from flask_restful import Resource, reqparse, fields, marshal
 from flask_sqlalchemy import SQLAlchemy
 from app import app, api, db
-from .models import User
+from .models import User, BucketList
+from flask_httpauth import HTTPBasicAuth
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
+
+
+auth = HTTPBasicAuth()
+
+current_user = {
+    'user_id': 4
+}
+
+@auth.verify_password
+def verify_auth_token(token):
+    s = Serializer(app.config['SECRET_KEY'])
+    try:
+        data = s.loads(token)
+    except SignatureExpired:
+        return None # valid token, but expired
+    except BadSignature:
+        return None # invalid token
+    user_id = data['id']
+    current_user['user_id'] = user_id
+    return user_id
 
 
 class IndexResource(Resource):
@@ -36,9 +59,9 @@ class UserRegisterAPI(Resource):
         # testing if a user exists
         if User.query.filter_by(username = username).first() is not None:
             return {'message': 'invalid username or password'}
-        user = User(username = username, password=password )
-        user.set_password(password)
-        db.session.add(user)
+        new_user = User(username = username, password=password )
+        new_user.hash_password(password)
+        db.session.add(new_user)
         db.session.commit()
         return {'message': '%s has been succesfully registered' % username}
 
@@ -56,35 +79,79 @@ class UserLoginAPI(Resource):
         args = self.reqparse.parse_args()
         username = args['username']
         password = args['password']
+
         # testing if a user details are correct
         user = User.query.filter_by(username = username).first()
-        if user and user.check_password(password):
-            return {'message': '%s has been succesfully logged in' % username}
+        if user and user.verify_password(password):
+            token = user.generate_auth_token()
+            return {'Authorization': token.decode('ascii')}
         return {'message': 'invalid username or password'}
 
 
-
 class BucketListAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('title', type = str, required = True,
+            help = 'title cannot be blank', location = 'json')
+        self.reqparse.add_argument('description', location = 'json')
+        super(BucketListAPI, self).__init__()
 
-    def get(self, id):
+    def get(self, bucketlist_id):
         '''
         Can also get a specific bucketlist by specifying the id
         '''
         return {'message': 'None'}, 200
 
-    def put(self, id):
+    #@auth.login_required
+    def put(self, bucketlist_id):
         '''
         Edits the bucketlist with a specific id
         '''
-        pass
+        user_id = current_user['user_id']
+        args = self.reqparse.parse_args()
+        new_title = args['title']
+        new_description = args['description']
 
-    def delete(self, id):
+        # testing if the bucketlist with that id exists for this user
+        bucketlist = BucketList.query.filter_by(bucketlist_id = bucketlist_id, created_by=user_id).first()
+
+        if bucketlist is None:
+            return {'message': 'Bucketlist with %s id not found' % bucketlist_id}
+
+        if args.title:
+            bucketlist.title = args.title
+        if args.description:
+            bucketlist.description = args.description
+        db.session.commit()
+        return {'message': 'The bucketlist with ID %s was updated' % bucketlist_id}
+
+    #@auth.login_required
+    def delete(self, bucketlist_id):
         '''
         Deletes the bucketlist with a specific id
         '''
-        pass
+        user_id = current_user['user_id']
+        args = self.reqparse.parse_args()
+
+        # testing if the bucketlist with that id exists for this user before deletion
+        bucketlist = BucketList.query.filter_by(bucketlist_id = bucketlist_id, created_by=user_id).first()
+
+        if bucketlist is None:
+            return {'message': 'Bucketlist with %s id not found' % bucketlist_id}
+
+        db.session.delete(bucketlist)
+        db.session.commit()
+        return {'message': 'The bucketlist with ID %s was deleted' % bucketlist_id}
+
 
 class BucketListRootAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('title', type = str, required = True,
+            help = 'title cannot be blank', location = 'json')
+        self.reqparse.add_argument('description', default = "",
+            location = 'json')
+        super(BucketListRootAPI, self).__init__()
 
     def get(self):
         '''
@@ -94,27 +161,39 @@ class BucketListRootAPI(Resource):
         '''
         return {'message': 'None'}, 200
 
+    #@auth.login_required
     def post(self):
         '''
-        Creates a new bucketlist
+        Creates a new bucketlist that belong to the user that is already logged in
         '''
-        pass
+        user_id = current_user['user_id']
+        args = self.reqparse.parse_args()
+        title = args['title']
+        description = args['description']
+
+        # testing if the bucketlist exists for this user
+        if BucketList.query.filter_by(title = title, created_by=user_id).first() is not None:
+            return {'message': 'Bucketlist with that title already exists'}
+        new_bucketlist = BucketList(title = title, description=description, created_by=current_user['user_id'])
+        db.session.add(new_bucketlist)
+        db.session.commit()
+        return {'message': '%s has been succesfully created' % title}
 
 class BucketListItemsAPI(Resource):
 
-    def post(self, id):
+    def post(self, bucketlist_id):
         '''
         Creates a new item in a specific bucketlist
         '''
         return {'message': 'None'}, 201
 
-    def put(self, id, item_id):
+    def put(self, bucketlist_id, item_id):
         '''
         Edits a specific item in a bucketlist
         '''
         return {'message': 'None'}, 200
 
-    def delete(self, id, item_id):
+    def delete(self, bucketlist_id, item_id):
         '''
         Deletes a specific item in a bucketlist
         '''

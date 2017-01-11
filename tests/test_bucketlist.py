@@ -33,7 +33,7 @@ class BucketListTest(BaseBucketListApiTest):
         will create a new bucketlist.
         '''
         post_data = {'title': 'Hiking'}
-        response = self.client.post('/bucketlists', data=post_data,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data),
                                     headers=self.get_header())
         self.assertEqual(response.status_code, 201)
         self.assertIn(post_data['title'], response.get_data(as_text=True))
@@ -44,7 +44,7 @@ class BucketListTest(BaseBucketListApiTest):
         will not create bucketlist but rather return a 400(Bad Request) status code.
         '''
         post_data = {}
-        response = self.client.post('/bucketlists', data=post_data,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data),
                                     headers=self.get_header())
         self.assert400(response)
 
@@ -54,10 +54,10 @@ class BucketListTest(BaseBucketListApiTest):
         will edit and update the bucketlist in the database
         '''
         post_data = {'title': 'Chelsea FC'}
-        response = self.client.post('/bucketlists', data=post_data,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data),
                                     headers=self.get_header())
         put_data = {'title': 'Chelsea FC Players'}
-        response = self.client.put('/bucketlists/1', data=put_data,
+        response = self.client.put('/bucketlists/1', data=json.dumps(put_data),
                                     headers=self.get_header())
         self.assertTrue(response.status_code == 200)
         self.assertIn(put_data['title'], response.get_data(as_text=True))
@@ -68,10 +68,10 @@ class BucketListTest(BaseBucketListApiTest):
         will not edit and update the bucketlist in the database but insteade return a 204: No Content
         '''
         post_data = {'title': 'Chelsea FC'}
-        response = self.client.post('/bucketlists', data=post_data,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data),
                                     headers=self.get_header())
         put_data = {}
-        response = self.client.put('/bucketlists/1', data=put_data,
+        response = self.client.put('/bucketlists/1', data=json.dumps(put_data),
                                     headers=self.get_header())
         self.assert400(response)
 
@@ -80,7 +80,7 @@ class BucketListTest(BaseBucketListApiTest):
         will delete the bucket list from the database
         '''
         post_data = {'title': 'Chelsea FC'}
-        response = self.client.post('/bucketlists', data=post_data,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data),
                                     headers=self.get_header())
         response = self.client.delete('/bucketlists/1',
                                     headers=self.get_header())
@@ -104,14 +104,14 @@ class BucketListTest(BaseBucketListApiTest):
         Try to access a bucketlist created by user steve using access token of angie
         '''
         # register a new test user called angie
-        self.user = dict(username= 'angie', password= 'passworddd')
-        response_register = self.client.post('/auth/register', data=self.user)
+        user = {"username": "angie", "password": "chelseaddd"}
+        response_register = self.client.post('/auth/register', data=json.dumps(user))
         response_data = json.loads(response_register.get_data(as_text=True))
         angie_token = response_data.get('Authorization')
 
         # create a bucketlist with user steve
         post_data = {'title': 'I Love Python'}
-        self.client.post('/bucketlists', data=post_data,
+        self.client.post('/bucketlists', data=json.dumps(post_data),
                                     headers=self.get_header())
 
         # Access the bucket list with user angie
@@ -136,13 +136,13 @@ class BucketListTest(BaseBucketListApiTest):
         Ensures that a user can specify the number of results they want returned
         '''
         post_data1 = {'title': 'Python Language'}
-        response = self.client.post('/bucketlists', data=post_data1,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data1),
                                     headers=self.get_header())
         post_data2 = {'title': 'I Love Python'}
-        self.client.post('/bucketlists', data=post_data2,
+        self.client.post('/bucketlists', data=json.dumps(post_data2),
                                     headers=self.get_header())
         post_data3 = {'title': 'Chelsea FC'}
-        response = self.client.post('/bucketlists', data=post_data3,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data3),
                                     headers=self.get_header())
 
         response = self.client.get('/bucketlists?limit=2', headers=self.get_header())
@@ -157,10 +157,10 @@ class BucketListTest(BaseBucketListApiTest):
         Search through the bucketlists and returns bucketlist that contain the search term in their title
         '''
         post_data = {'title': 'Python Language'}
-        response = self.client.post('/bucketlists', data=post_data,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data),
                                     headers=self.get_header())
         post_data3 = {'title': 'Chelsea FC'}
-        response = self.client.post('/bucketlists', data=post_data3,
+        response = self.client.post('/bucketlists', data=json.dumps(post_data3),
                                     headers=self.get_header())
         # search for the bucketlist with a name Python
         search_response = self.client.get('/bucketlists?q=Python', headers=self.get_header())
