@@ -179,39 +179,84 @@ class BucketListRootAPI(Resource):
         db.session.commit()
         return {'message': '%s has been succesfully created' % title}
 
-class BucketListItemsAPI(Resource):
+class BucketListItemsRootAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('title', type = str, required = True,
             help = 'title cannot be blank', location = 'json')
-        self.reqparse.add_argument('done', type = bool, location = 'json')
-        super(BucketListItemsAPI, self).__init__()
+        super(BucketListItemsRootAPI, self).__init__()
 
     def post(self, bucketlist_id):
         '''
-        Creates a new item in a specific bucketlist
+        Creates a new item in a specific bucketlist, check if the bucketlist exists
+        before creating a bucketlit item.
+        Check if that bucketlist have another item with that name.
         '''
         user_id = current_user['user_id']
         args = self.reqparse.parse_args()
         title = args['title']
 
+        # cheking if the bucketlist with the id given exists
+        if BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
+            return {'message': 'BucketList with ID %s not found' % bucketlist_id}
+
         # testing if the bucketlistitems title exists for this user
-        if BucketListItems.query.filter_by(title = title).first() is not None:
+        if BucketListItems.query.filter_by(bucketlist_id=bucketlist_id, title = title).first() is not None:
             return {'message': 'Bucketlistitem name %s already exists' % title}
-        new_bucketlistitem = BucketListItems(title = title)
+        new_bucketlistitem = BucketListItems(title = title, bucketlist_id=bucketlist_id)
         db.session.add(new_bucketlistitem)
         db.session.commit()
         return {'message': '%s has been succesfully created' % title}
 
 
+class BucketListItemAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('title', type = str, required = True,
+            help = 'title cannot be blank', location = 'json')
+        self.reqparse.add_argument('done', type = bool, location = 'json')
+        super(BucketListItemAPI, self).__init__()
+
     def put(self, bucketlist_id, item_id):
         '''
-        Edits a specific item in a bucketlist
+        Edits a specific item in a bucketlist:
         '''
-        return {'message': 'None'}, 200
+        user_id = current_user['user_id']
+        args = self.reqparse.parse_args()
+        title = args['title']
+        done = args['done']
+
+        if BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
+            return {'message': 'BucketList with ID %s not found' % bucketlist_id}
+
+        bucketlist_item =  BucketListItems.query.filter_by(bucketlist_id=bucketlist_id, item_id=item_id).first()
+
+        if bucketlist_item is None:
+            return {'message': 'Bucketlistitem with ID %s not found' % item_id}
+
+        if args.title:
+            bucketlist_item.title = args.title
+        if args.done:
+            bucketlist_item.done = args.done
+        db.session.commit()
+        return {'message': 'The bucketlist item with ID %s was updated' % item_id}
+
 
     def delete(self, bucketlist_id, item_id):
         '''
         Deletes a specific item in a bucketlist
         '''
-        return {'message': 'None'}, 200
+        user_id = current_user['user_id']
+        args = self.reqparse.parse_args()
+
+        # check that the bucketlist item is found on that bucketlist before deleting
+        if BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
+            return {'message': 'BucketList with ID %s not found' % bucketlist_id}
+
+        bucketlist_item = BucketListItems.query.filter_by(bucketlist_id=bucketlist_id, item_id=item_id)
+        print(bucketlist_item)
+        if bucketlist_item is None:
+            return {'message': 'Bucketlistitem with ID %s not found' % item_id}
+        db.session.delete(bucketlist_item)
+        db.session.commit()
+        return {'message': 'The bucketlist item with ID %s was deleted' % item_id}

@@ -37,12 +37,13 @@ class BucketListItemsTest(BaseBucketListApiTest):
         Ensures that a user can create a bucketlistitems in a certain bucketlist
         '''
         self.add_bucketlist()
-        post_data = {'item': 'Python', 'done': False}
+        post_data = {'title': 'Python'}
         response = self.client.post('/bucketlists/1/items', data=json.dumps(post_data),
                                     headers=self.get_header())
+
         self.assertEqual(response.status_code, 201)
         response_data = json.loads(response.get_data(as_text=True))
-        self.assertIn(post_data['item'], response_data['message'])
+        self.assertIn('succesfully created', response_data['message'])
 
     def test_post_invalid_bucketlistitem(self):
         '''
