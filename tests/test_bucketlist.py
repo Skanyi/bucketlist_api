@@ -27,7 +27,7 @@ class BucketListTest(BaseBucketListApiTest):
                 'Content-Type': 'application/json',
             }
 
-    def test_post_bucketlist(self):
+    def test_create_bucketlist(self):
         '''
         Ensures that a valid POST request to /bucketlists
         will create a new bucketlist.
@@ -38,7 +38,7 @@ class BucketListTest(BaseBucketListApiTest):
         self.assertEqual(response.status_code, 201)
         self.assertIn(post_data['title'], response.get_data(as_text=True))
 
-    def test_post_invalid_bucketlist(self):
+    def test_create_invalid_bucketlist(self):
         '''
         Ensures that a invalid POST request to /bucketlists
         will not create bucketlist but rather return a 400(Bad Request) status code.
@@ -48,7 +48,7 @@ class BucketListTest(BaseBucketListApiTest):
                                     headers=self.get_header())
         self.assert400(response)
 
-    def test_put_bucketlist(self):
+    def test_edit_bucketlist(self):
         '''
         Ensures that a valid PUT request to /bucketlists/<id>
         will edit and update the bucketlist in the database
@@ -62,7 +62,7 @@ class BucketListTest(BaseBucketListApiTest):
         self.assertTrue(response.status_code == 200)
         self.assertIn('was updated', response.get_data(as_text=True))
 
-    def test_invalid_put_bucketlist(self):
+    def test_invalid_edit_bucketlist(self):
         '''
         Ensures that a invalid PUT request to /bucketlists/<id>
         will not edit and update the bucketlist in the database but insteade return a 204: No Content

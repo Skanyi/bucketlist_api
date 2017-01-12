@@ -12,9 +12,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 from app import models
-from app.views import IndexResource, UserRegisterAPI, UserLoginAPI, BucketListRootAPI, BucketListAPI, BucketListItemAPI, BucketListItemsRootAPI
+from app.views import UserRegisterAPI, UserLoginAPI, BucketListRootAPI, BucketListAPI, BucketListItemAPI, BucketListItemsRootAPI
 
-api.add_resource(IndexResource, '/',endpoint ='index')
+api.add_resource(BucketListRootAPI, '/',endpoint ='index')
 api.add_resource(UserRegisterAPI, '/auth/register', endpoint='register')
 api.add_resource(UserLoginAPI, '/auth/login', endpoint='login')
 api.add_resource(BucketListRootAPI, '/bucketlists', endpoint='lists')

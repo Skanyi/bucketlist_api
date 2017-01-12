@@ -32,7 +32,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
             return True
         return False
 
-    def test_post_bucketlistitem(self):
+    def test_create_bucketlistitem(self):
         '''
         Ensures that a user can create a bucketlistitems in a certain bucketlist
         '''
@@ -45,7 +45,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
         response_data = json.loads(response.get_data(as_text=True))
         self.assertIn('succesfully created', response_data['message'])
 
-    def test_post_invalid_bucketlistitem(self):
+    def test_create_invalid_bucketlistitem(self):
         '''
         Ensures that a invalid POST request to /bucketlists/<id>/items
         will not create bucketlistitems but rather return a 400(Bad Request) status code.
@@ -56,35 +56,35 @@ class BucketListItemsTest(BaseBucketListApiTest):
                                     headers=self.get_header())
         self.assert400(response)
 
-    def test_put_bucketlistitem(self):
+    def test_edit_bucketlistitem(self):
         '''
         Ensures that a user can edit a bucketlistitem in a certain bucketlist
         '''
         self.add_bucketlist()
-        post_data = {'item': 'Python', 'done': False}
+        post_data = {'title': 'Python', 'done': False}
         post_response = self.client.post('/bucketlists/1/items', data=json.dumps(post_data),
                                     headers=self.get_header())
-        self.assertEqual(post_response.status_code, 201)
-        put_data = {'item': 'Javascript', 'done': False}
+        put_data = {'title': 'Javascript', 'done': False}
         put_response = self.client.put('/bucketlists/1/items/1', data=json.dumps(put_data),
                                         headers=self.get_header())
         self.assertEqual(put_response.status_code, 200)
         put_response_data = json.loads(put_response.get_data(as_text=True))
-        self.assertIn(put_data['item'], put_response_data['message'])
+        self.assertIn('was updated', put_response_data['message'])
 
-    def test_invalid_put_bucketlistitem(self):
+    def test_invalid_edit_bucketlistitem(self):
         '''
         Ensures that a invalid PUT request to /bucketlists/<bucketlist_id>/items/<item_id>
         will not edit and update the bucketlistitem in the database but insteade return a 204: No Content
         '''
         self.add_bucketlist()
-        post_data = {'item': 'Chelsea FC', 'done': False}
+        post_data = {'title': 'Chelsea FC'}
         response = self.client.post('/bucketlists/1/items', data=json.dumps(post_data),
                                     headers=self.get_header())
         put_data = {}
         response = self.client.put('/bucketlists/1/items/1', data=json.dumps(put_data),
                                     headers=self.get_header())
-        self.assertEqual(response, 204)
+        response_data = json.loads(response.get_data(as_text=True))
+        self.assertEqual({"message": {"title": "title cannot be blank"}}, response_data)
 
     def test_delete_bucketlistitems(self):
         '''
@@ -92,13 +92,13 @@ class BucketListItemsTest(BaseBucketListApiTest):
         a certain bucketlist
         '''
         self.add_bucketlist()
-        post_data = {'item': 'Python', 'done': False}
+        post_data = {'title': 'Python'}
         post_response = self.client.post('/bucketlists/1/items', data=json.dumps(post_data),
                                     headers=self.get_header())
         self.assertEqual(post_response.status_code, 201)
         delete_response = self.client.delete('/bucketlists/1/items/1',
                                                 headers=self.get_header())
-        self.assertTrue(delete_response.status_code == 204)
+        self.assertEqual(delete_response.status_code, 204)
         self.assertIn('{}\n', delete_response.get_data(as_text=True))
 
     def test_bucketlist_delete_not_found(self):

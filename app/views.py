@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-from flask_restful import Resource, reqparse, fields, marshal
+from flask_restful import Resource, reqparse, marshal
 from flask_sqlalchemy import SQLAlchemy
 from app import app, api, db
 from .models import User, BucketList, BucketListItems
@@ -29,18 +29,6 @@ def verify_auth_token(token):
     return user_id
 
 
-class IndexResource(Resource):
-    """
-    Manage responses to the index route.
-    Methods:
-        GET
-    """
-
-    def get(self):
-        """Return a welcome message."""
-        return {'message': 'Welcome to my Bucketlist Api'}
-
-
 class UserRegisterAPI(Resource):
 
     def __init__(self):
@@ -58,12 +46,12 @@ class UserRegisterAPI(Resource):
 
         # testing if a user exists
         if User.query.filter_by(username = username).first() is not None:
-            return {'message': 'invalid username or password'}
-        new_user = User(username = username, password=password )
+            return {'message': 'user with that username already exists'}
+        new_user = User(username = username, password=password)
         new_user.hash_password(password)
         db.session.add(new_user)
         db.session.commit()
-        return {'message': '%s has been succesfully registered' % username}
+        return {'message': '%s has been succesfully registered' % username}, 201
 
 
 class UserLoginAPI(Resource):
@@ -89,24 +77,28 @@ class UserLoginAPI(Resource):
 
 
 class BucketListAPI(Resource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('title', type = str, required = True,
-            help = 'title cannot be blank', location = 'json')
-        self.reqparse.add_argument('description', location = 'json')
-        super(BucketListAPI, self).__init__()
 
     def get(self, bucketlist_id):
         '''
         Can also get a specific bucketlist by specifying the id
         '''
-        return {'message': 'None'}, 200
+        user_id = current_user['user_id']
+        bucketlist = BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first()
+
+        if bucketlist:
+            return bucketlist
+        return {'message': 'BucketList with ID %s not found' % bucketlist_id}
 
     #@auth.login_required
     def put(self, bucketlist_id):
         '''
         Edits the bucketlist with a specific id
         '''
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('title', type = str, required = True,
+            help = 'title cannot be blank', location = 'json')
+        self.reqparse.add_argument('description', location = 'json')
+
         user_id = current_user['user_id']
         args = self.reqparse.parse_args()
         new_title = args['title']
@@ -131,27 +123,19 @@ class BucketListAPI(Resource):
         Deletes the bucketlist with a specific id
         '''
         user_id = current_user['user_id']
-        args = self.reqparse.parse_args()
 
         # testing if the bucketlist with that id exists for this user before deletion
         bucketlist = BucketList.query.filter_by(bucketlist_id = bucketlist_id, created_by=user_id).first()
 
         if bucketlist is None:
-            return {'message': 'Bucketlist with %s id not found' % bucketlist_id}
+            return {'message': 'Bucketlist with %s id not found' % bucketlist_id}, 404
 
         db.session.delete(bucketlist)
         db.session.commit()
-        return {'message': 'The bucketlist with ID %s was deleted' % bucketlist_id}
+        return {'message': 'The bucketlist with ID %s was deleted' % bucketlist_id}, 204
 
 
 class BucketListRootAPI(Resource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('title', type = str, required = True,
-            help = 'title cannot be blank', location = 'json')
-        self.reqparse.add_argument('description', default = "",
-            location = 'json')
-        super(BucketListRootAPI, self).__init__()
 
     def get(self):
         '''
@@ -166,6 +150,12 @@ class BucketListRootAPI(Resource):
         '''
         Creates a new bucketlist that belong to the user that is already logged in
         '''
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('title', type = str, required = True,
+            help = 'title cannot be blank', location = 'json')
+        self.reqparse.add_argument('description', default = "",
+            location = 'json')
+
         user_id = current_user['user_id']
         args = self.reqparse.parse_args()
         title = args['title']
@@ -177,7 +167,7 @@ class BucketListRootAPI(Resource):
         new_bucketlist = BucketList(title = title, description=description, created_by=current_user['user_id'])
         db.session.add(new_bucketlist)
         db.session.commit()
-        return {'message': '%s has been succesfully created' % title}
+        return {'message': '%s has been succesfully created' % title}, 201
 
 class BucketListItemsRootAPI(Resource):
     def __init__(self):
@@ -192,6 +182,7 @@ class BucketListItemsRootAPI(Resource):
         before creating a bucketlit item.
         Check if that bucketlist have another item with that name.
         '''
+
         user_id = current_user['user_id']
         args = self.reqparse.parse_args()
         title = args['title']
@@ -206,21 +197,19 @@ class BucketListItemsRootAPI(Resource):
         new_bucketlistitem = BucketListItems(title = title, bucketlist_id=bucketlist_id)
         db.session.add(new_bucketlistitem)
         db.session.commit()
-        return {'message': '%s has been succesfully created' % title}
+        return {'message': '%s has been succesfully created' % title}, 201
 
 
 class BucketListItemAPI(Resource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('title', type = str, required = True,
-            help = 'title cannot be blank', location = 'json')
-        self.reqparse.add_argument('done', type = bool, location = 'json')
-        super(BucketListItemAPI, self).__init__()
 
     def put(self, bucketlist_id, item_id):
         '''
         Edits a specific item in a bucketlist:
         '''
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('title', type = str, required = True,
+            help = 'title cannot be blank', location = 'json')
+        self.reqparse.add_argument('done', type = bool, location = 'json')
         user_id = current_user['user_id']
         args = self.reqparse.parse_args()
         title = args['title']
@@ -247,16 +236,14 @@ class BucketListItemAPI(Resource):
         Deletes a specific item in a bucketlist
         '''
         user_id = current_user['user_id']
-        args = self.reqparse.parse_args()
 
         # check that the bucketlist item is found on that bucketlist before deleting
         if BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
             return {'message': 'BucketList with ID %s not found' % bucketlist_id}
 
-        bucketlist_item = BucketListItems.query.filter_by(bucketlist_id=bucketlist_id, item_id=item_id)
-        print(bucketlist_item)
+        bucketlist_item = BucketListItems.query.filter_by(bucketlist_id=bucketlist_id, item_id=item_id).first()
         if bucketlist_item is None:
-            return {'message': 'Bucketlistitem with ID %s not found' % item_id}
+            return {'message': 'Bucketlistitem with ID %s not found' % item_id}, 404
         db.session.delete(bucketlist_item)
         db.session.commit()
-        return {'message': 'The bucketlist item with ID %s was deleted' % item_id}
+        return {'message': 'The bucketlist item with ID %s was deleted' % item_id}, 204
