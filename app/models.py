@@ -10,7 +10,7 @@ from sqlalchemy.dialects.postgresql import JSON
 from passlib.apps import custom_app_context as pwd_context
 import datetime
 from itsdangerous import (TimedJSONWebSignatureSerializer
-                          as Serializer)
+                          as Serializer, BadSignature, SignatureExpired)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -36,6 +36,20 @@ class User(db.Model):
         s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
         return s.dumps({ 'user_id': self.user_id })
 
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None # valid token, but expired
+        except BadSignature:
+            return None # invalid token
+        user_id = data['id']
+        current_user['user_id'] = user_id
+        return user_id
+
+
 
     def __repr__(self):
         return '<user_id {}>'.format(self.user_id)
@@ -46,13 +60,13 @@ class BucketList(db.Model):
     bucketlist_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String())
     description = db.Column(db.String())
-    created_by = db.Column(db.Integer, db.ForeignKey('users.user_id',
-                                                     ondelete='CASCADE'))
     items = db.relationship('BucketListItems',
                                       backref='bucketlists',
                                       passive_deletes=True)
     date_created = db.Column(db.DateTime, server_default=db.func.now())
     date_modified = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+    created_by = db.Column(db.Integer, db.ForeignKey('users.user_id',
+                                                     ondelete='CASCADE'))
 
 
     def __init__(self, title, description, created_by):

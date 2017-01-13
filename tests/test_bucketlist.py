@@ -116,7 +116,7 @@ class BucketListTest(BaseBucketListApiTest):
         # Access the bucket list with user angie
         response = self.client.get('/bucketlists/1', headers={'Authorization': angie_token})
         response_data = json.loads(response.get_data(as_text=True))
-        self.assertIn('bucketlist was not found', response_data['message'])
+        self.assertIn('not found', response_data['message'])
         self.assert404(response)
 
     def test_unauthenticated_access(self):
@@ -164,6 +164,6 @@ class BucketListTest(BaseBucketListApiTest):
         # search for the bucketlist with a name Python
         search_response = self.client.get('/bucketlists?q=Python', headers=self.get_header())
         search_response_data = json.loads(search_response.get_data(as_text=True))
-        self.assertIn('Python', search_response_data['message'])
+        self.assertIn('Pyt', search_response_data['message'])
         self.assertNotIn('Chelsea', search_response_data['message'])
         self.assert200(search_response)
