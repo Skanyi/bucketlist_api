@@ -45,11 +45,8 @@ class User(db.Model):
             return None # valid token, but expired
         except BadSignature:
             return None # invalid token
-        user_id = data['id']
-        current_user['user_id'] = user_id
-        return user_id
-
-
+        user = User.query.get(data['user_id'])
+        return user
 
     def __repr__(self):
         return '<user_id {}>'.format(self.user_id)

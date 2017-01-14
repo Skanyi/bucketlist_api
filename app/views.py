@@ -11,22 +11,19 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 
 
 auth = HTTPBasicAuth()
-#
-# current_user = {
-#     'user_id': None
-# }
 
 @auth.verify_password
 def verify_password(username_or_token, password):
+    # first try to authenticate by token
     user = User.verify_auth_token(username_or_token)
-    if user is None:
-        user = User.query.filter_by(username = username_or_token).first()
 
-        if not user:
-            return {'message':'No user with that username'},400
-        if not user.verify_password(password):
-            return {'message': 'invalid password'},400
+    if not user:
+        # try to authenticate with username/password
+        user = User.query.filter_by(username = username_or_token).first()
+        if not user or not user.verify_password(password):
+            return False
     g.user = user
+    return True
 
 class UserRegisterAPI(Resource):
 
@@ -82,7 +79,7 @@ class BucketListAPI(Resource):
         '''
         Can also get a specific bucketlist by specifying the id
         '''
-        user_id = current_user['user_id']
+        user_id = g.user.user_id
         bucketlist = BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first()
 
         if bucketlist:
@@ -99,7 +96,7 @@ class BucketListAPI(Resource):
             help = 'title cannot be blank', location = 'json')
         self.reqparse.add_argument('description', location = 'json')
 
-        user_id = current_user['user_id']
+        user_id = g.user.user_id
         args = self.reqparse.parse_args()
         new_title = args['title']
         new_description = args['description']
@@ -122,7 +119,7 @@ class BucketListAPI(Resource):
         '''
         Deletes the bucketlist with a specific id
         '''
-        user_id = current_user['user_id']
+        user_id = g.user.user_id
 
         # testing if the bucketlist with that id exists for this user before deletion
         bucketlist = BucketList.query.filter_by(bucketlist_id = bucketlist_id, created_by=user_id).first()
@@ -144,7 +141,7 @@ class BucketListRootAPI(Resource):
         The default is set to 20 results and the maximum result is 100.
         The user can also search a bucketlist by name.
         '''
-        user_id = current_user['user_id']
+        user_id = g.user.user_id
         pagination_arguments = reqparse.RequestParser()
         pagination_arguments.add_argument('page', location="args", required=False,
                                             default=1)
@@ -214,7 +211,7 @@ class BucketListItemsRootAPI(Resource):
         Check if that bucketlist have another item with that name.
         '''
 
-        user_id = current_user['user_id']
+        user_id = g.user.user_id
         args = self.reqparse.parse_args()
         title = args['title']
 
@@ -242,7 +239,7 @@ class BucketListItemAPI(Resource):
         self.reqparse.add_argument('title', type = str, required = True,
             help = 'title cannot be blank', location = 'json')
         self.reqparse.add_argument('done', type = bool, location = 'json')
-        user_id = current_user['user_id']
+        user_id = g.user.user_id
         args = self.reqparse.parse_args()
         title = args['title']
         done = args['done']
@@ -267,7 +264,7 @@ class BucketListItemAPI(Resource):
         '''
         Deletes a specific item in a bucketlist
         '''
-        user_id = current_user['user_id']
+        user_id = g.user.user_id
 
         # check that the bucketlist item is found on that bucketlist before deleting
         if BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
