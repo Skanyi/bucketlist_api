@@ -1,4 +1,6 @@
 ## WELCOME TO MY API
+[![Build Status](https://travis-ci.org/pythonGeek/bucketlist_api.svg?branch=master)](https://travis-ci.org/pythonGeek/bucketlist_api)
+[![Coverage Status](https://coveralls.io/repos/github/pythonGeek/bucketlist_api/badge.svg?branch=master)](https://coveralls.io/github/pythonGeek/bucketlist_api?branch=master)
 #BucketList Application API
 
 ## Introduction
