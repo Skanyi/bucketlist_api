@@ -18,13 +18,14 @@ class BucketListTest(BaseBucketListApiTest):
         Returns:
             request header with token
         """
-        self.user = dict(username= 'steve', password= 'password')
-        response_login = self.client.post('/auth/login', data=self.user)
+        user = {"username": "steve", "password": "password"}
+        response_login = self.client.post('/auth/login', data=json.dumps(user),
+                                          content_type='application/json')
         response_data = json.loads(response_login.get_data(as_text=True))
         token = response_data.get('Authorization')
-        return {'Authorization': token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
+        return {"Authorization": token,
+                "Accept": 'application/json',
+                "Content-Type": 'application/json',
             }
 
     def test_create_bucketlist(self):

@@ -14,11 +14,13 @@ class BucketListItemsTest(BaseBucketListApiTest):
         Returns:
             request header with token
         """
-        user = {"username": "kanyi", "password": "chelsea"}
-        response_login = self.client.post('/auth/login', data=json.dumps(user))
+        user = {"username": "steve", "password": "password"}
+        response_login = self.client.post('/auth/login', data=json.dumps(user),
+                                            content_type='application/json')
         response_data = json.loads(response_login.get_data(as_text=True))
         token = response_data.get('Authorization')
         return {'Authorization': token,
+                'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
     def add_bucketlist(self):
@@ -83,6 +85,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
         put_data = {}
         response = self.client.put('/bucketlists/1/items/1', data=json.dumps(put_data),
                                     headers=self.get_header())
+        print(response)
         response_data = json.loads(response.get_data(as_text=True))
         self.assertEqual({"message": {"title": "title cannot be blank"}}, response_data)
 

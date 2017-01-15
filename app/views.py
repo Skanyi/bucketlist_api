@@ -146,13 +146,16 @@ class BucketListRootAPI(Resource):
         pagination_arguments.add_argument('page', location="args", type=int, required=False,
                                             default=1)
         pagination_arguments.add_argument('limit', location="args", type=int, required=False,
-                                      default=2)
+                                      default=20)
         pagination_arguments.add_argument('q', location="args", required=False)
 
         args = pagination_arguments.parse_args()
         page = args['page']
         limit = args['limit']
         search_words = args['q']
+
+        if limit >100:
+            limit = 100
 
         if search_words:
             bucketlists_page = BucketList.query.filter(
