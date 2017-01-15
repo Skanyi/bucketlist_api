@@ -1,5 +1,5 @@
 import os
-from flask import Flask, g
+from flask import Flask, g, request
 from flask_restful import Resource, reqparse, marshal
 from flask_sqlalchemy import SQLAlchemy
 from app import app, api, db
@@ -143,34 +143,72 @@ class BucketListRootAPI(Resource):
         '''
         user_id = g.user.user_id
         pagination_arguments = reqparse.RequestParser()
-        pagination_arguments.add_argument('page', location="args", required=False,
+        pagination_arguments.add_argument('page', location="args", type=int, required=False,
                                             default=1)
-        pagination_arguments.add_argument('limit', location="args", required=False,
-                                      default=20)
-        pagination_arguments.add_argument('offset', location="args", required=False,
-                                      default=0)
+        pagination_arguments.add_argument('limit', location="args", type=int, required=False,
+                                      default=2)
         pagination_arguments.add_argument('q', location="args", required=False)
 
         args = pagination_arguments.parse_args()
         page = args['page']
         limit = args['limit']
-        offset = args['offset']
         search_words = args['q']
 
         if search_words:
-            bucketlists = BucketList.query.filter(
+            bucketlists_page = BucketList.query.filter(
             BucketList.created_by == user_id,
             BucketList.title.like('%' + search_words + '%')).paginate(page, limit, False)
-            return marshal(bucketlists, bucketlist_serializer)
+            if bucketlists_page:
+                total = bucketlists_page.pages
+                has_next = bucketlists_page.has_next
+                has_previous = bucketlists_page.has_prev
 
-        # if limit:
-        #     bucketlist = BucketList.query.filter_by(created_by=user_id).paginate(page, per_page=limit, False)
-        #     print(bucketlists)
+                if has_next:
+                    next_page = str(request.url_root) + 'bucketlists?' + \
+                        'q=' + str(search_words) + '&page=' + str(page + 1)
+                else:
+                    next_page = 'None'
+                if has_previous:
+                    previous_page = request.url_root + 'bucketlists?' + \
+                        'q=' + str(search_words) + '&page=' + str(page - 1)
+                else:
+                    previous_page = 'None'
+                bucketlists = bucketlists_page.items
 
-        bucketlists = BucketList.query.filter_by(created_by=user_id).all()
-        if bucketlists is None:
-            return ({'message': "You don't have any bucketlist, create one now"})
-        return marshal(bucketlists, bucketlist_serializer)
+                response = {'bucketlists': marshal(bucketlists, bucketlist_serializer),
+                        'has_next': has_next,
+                        'pages': total,
+                        'previous_page': previous_page,
+                        'next_page': next_page
+                        }
+                return response
+            else:
+                return {'message': "No bucktetlist with %s found" % search_words}
+
+        bucketlists_page = BucketList.query.filter_by(created_by=user_id).paginate(page=page, per_page=limit, error_out=False)
+        total = bucketlists_page.pages
+        has_next = bucketlists_page.has_next
+        has_previous = bucketlists_page.has_prev
+
+        if has_next:
+            next_page = str(request.url_root) + 'bucketlists?' + \
+                'limit=' + str(limit) + '&page=' + str(page + 1)
+        else:
+            next_page = 'None'
+        if has_previous:
+            previous_page = request.url_root + 'bucketlists?' + \
+                'limit=' + str(limit) + '&page=' + str(page - 1)
+        else:
+            previous_page = 'None'
+        bucketlists = bucketlists_page.items
+
+        response = {'bucketlists': marshal(bucketlists, bucketlist_serializer),
+                'has_next': has_next,
+                'pages': total,
+                'previous_page': previous_page,
+                'next_page': next_page
+                }
+        return response
 
     @auth.login_required
     def post(self):
