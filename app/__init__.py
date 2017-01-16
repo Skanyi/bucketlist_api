@@ -5,7 +5,7 @@ import os
 from config.config import configuration
 
 app = Flask(__name__)
-api = Api(app)
+api = Api(app, catch_all_404s=True)
 
 app.config.from_object(configuration['default'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
