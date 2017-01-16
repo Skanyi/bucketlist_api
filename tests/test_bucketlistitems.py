@@ -3,7 +3,6 @@ Test that a user can create, edit and delete a bucketlistitem,
 '''
 
 from .test_api import BaseBucketListApiTest
-from app.models import BucketListItems
 import json
 from base64 import b64encode
 
@@ -102,7 +101,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
         delete_response = self.client.delete('/bucketlists/1/items/1',
                                                 headers=self.get_header())
         self.assertEqual(delete_response.status_code, 204)
-        self.assertIn('{}\n', delete_response.get_data(as_text=True))
+        self.assertEqual('', delete_response.get_data(as_text=True))
 
     def test_bucketlist_delete_not_found(self):
         '''

@@ -7,7 +7,6 @@ Test that a user can search a bucketlist by its name
 '''
 
 from .test_api import BaseBucketListApiTest
-from app.models import BucketList
 import json
 from base64 import b64encode
 
@@ -86,7 +85,7 @@ class BucketListTest(BaseBucketListApiTest):
                                     headers=self.get_header())
         response = self.client.delete('/bucketlists/1', headers=self.get_header())
         self.assertEqual(response.status_code, 204)
-        self.assertIn('{}\n', response.get_data(as_text=True))
+        self.assertEqual("", response.get_data(as_text=True))
 
     def test_bucketlist_delete_not_found(self):
         '''
@@ -96,6 +95,19 @@ class BucketListTest(BaseBucketListApiTest):
         '''
         response = self.client.delete('/bucketlists/9080000', headers=self.get_header())
         self.assert404(response)
+
+    def test_get_bucketlist(self):
+        '''
+        Ensures that it returns the correct bucketlist called with
+        specific id
+        '''
+        post_data = {'title': 'Chelsea FC'}
+        response = self.client.post('/bucketlists', data=json.dumps(post_data),
+                                    headers=self.get_header())
+        get_response = self.client.get('/bucketlists/1', headers=self.get_header())
+        self.assertEqual(get_response.status_code, 200)
+        get_response_data = json.loads(get_response.get_data(as_text=True))
+        self.assertEqual('chelsea fc', get_response_data['title'])
 
     def test_unauthorized_access(self):
         '''

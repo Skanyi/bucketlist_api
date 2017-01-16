@@ -316,4 +316,4 @@ class BucketListItemAPI(Resource):
             return {'message': 'Bucketlistitem with ID %s not found' % item_id}, 404
         db.session.delete(bucketlist_item)
         db.session.commit()
-        return {'message': 'The bucketlist item with ID %s was deleted' % item_id}, 204
+        return {}, 204

@@ -2,13 +2,10 @@
     setup the tests for the api everytime they are run
 '''
 
-from flask import Flask
 from flask_testing import TestCase
 from config.config import configuration
 from app.models import User
 from app import db, app
-import json
-
 
 class BaseBucketListApiTest(TestCase):
 
@@ -26,5 +23,4 @@ class BaseBucketListApiTest(TestCase):
         db.session.commit()
 
     def tearDown(self):
-        db.session.remove()
         db.drop_all()
