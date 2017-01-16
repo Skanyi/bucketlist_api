@@ -9,6 +9,7 @@ Test that a user can search a bucketlist by its name
 from .test_api import BaseBucketListApiTest
 from app.models import BucketList
 import json
+from base64 import b64encode
 
 class BucketListTest(BaseBucketListApiTest):
 
@@ -23,7 +24,7 @@ class BucketListTest(BaseBucketListApiTest):
                                           content_type='application/json')
         response_data = json.loads(response_login.get_data(as_text=True))
         token = response_data.get('Authorization')
-        return {"Authorization": token,
+        return {"Authorization": 'Basic %s' % b64encode(bytes(token + ':' , 'utf-8')).decode('ascii'),
                 "Accept": 'application/json',
                 "Content-Type": 'application/json',
             }
@@ -105,8 +106,11 @@ class BucketListTest(BaseBucketListApiTest):
         '''
         # register a new test user called angie
         user = {"username": "angie", "password": "chelseaddd"}
-        response_register = self.client.post('/auth/register', data=json.dumps(user))
-        response_data = json.loads(response_register.get_data(as_text=True))
+        response_register = self.client.post('/auth/register', data=json.dumps(user),
+                                            content_type='application/json')
+        response_login = self.client.post('/auth/login', data=json.dumps(user),
+                                            content_type='application/json')
+        response_data = json.loads(response_login.get_data(as_text=True))
         angie_token = response_data.get('Authorization')
 
         # create a bucketlist with user steve
@@ -115,7 +119,7 @@ class BucketListTest(BaseBucketListApiTest):
                                     headers=self.get_header())
 
         # Access the bucket list with user angie
-        response = self.client.get('/bucketlists/1', headers={'Authorization': angie_token})
+        response = self.client.get('/bucketlists/1', headers={'Authorization': 'Basic %s' % b64encode(bytes(angie_token + ':', 'utf-8')).decode('ascii')})
         response_data = json.loads(response.get_data(as_text=True))
         self.assertIn('not found', response_data['message'])
         self.assert404(response)
@@ -128,7 +132,7 @@ class BucketListTest(BaseBucketListApiTest):
         self.assert401(response)
 
     def test_get_non_existing_bucketlist(self):
-        response = self.client.get('/bucketlists/258642245')
+        response = self.client.get('/bucketlists/258642245', headers=self.get_header())
         self.assert404(response)
 
     def test_pagination(self):
@@ -147,7 +151,7 @@ class BucketListTest(BaseBucketListApiTest):
 
         response = self.client.get('/bucketlists?limit=2', headers=self.get_header())
         data = json.loads(response.get_data(as_text=True))
-        self.assertEqual(len(data), 2)
+        self.assertEqual(len(data['bucketlists']), 2)
         self.assert200(response)
 
     def test_search_by_name(self):
@@ -165,6 +169,7 @@ class BucketListTest(BaseBucketListApiTest):
         # search for the bucketlist with a name Python
         search_response = self.client.get('/bucketlists?q=Python', headers=self.get_header())
         search_response_data = json.loads(search_response.get_data(as_text=True))
-        self.assertIn('Pyt', search_response_data['message'])
-        self.assertNotIn('Chelsea', search_response_data['message'])
+        self.assertIn('pyt', search_response_data['bucketlists'][0]['title'])
+        self.assertEqual(len(search_response_data['bucketlists']), 1)
+        self.assertNotIn('Chelsea', search_response_data['bucketlists'][0]['title'])
         self.assert200(search_response)

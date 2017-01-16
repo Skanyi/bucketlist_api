@@ -84,7 +84,7 @@ class BucketListAPI(Resource):
 
         if bucketlist:
             return marshal(bucketlist, bucketlist_serializer)
-        return {'message': 'BucketList with ID %s not found' % bucketlist_id}
+        return {'message': 'BucketList with ID %s not found' % bucketlist_id}, 404
 
     @auth.login_required
     def put(self, bucketlist_id):

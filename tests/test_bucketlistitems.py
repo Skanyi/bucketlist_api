@@ -5,6 +5,7 @@ Test that a user can create, edit and delete a bucketlistitem,
 from .test_api import BaseBucketListApiTest
 from app.models import BucketListItems
 import json
+from base64 import b64encode
 
 class BucketListItemsTest(BaseBucketListApiTest):
 
@@ -19,7 +20,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
                                             content_type='application/json')
         response_data = json.loads(response_login.get_data(as_text=True))
         token = response_data.get('Authorization')
-        return {'Authorization': token,
+        return {'Authorization': 'Basic %s' % b64encode(bytes(token + ':', 'utf-8')).decode('ascii'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
@@ -85,7 +86,6 @@ class BucketListItemsTest(BaseBucketListApiTest):
         put_data = {}
         response = self.client.put('/bucketlists/1/items/1', data=json.dumps(put_data),
                                     headers=self.get_header())
-        print(response)
         response_data = json.loads(response.get_data(as_text=True))
         self.assertEqual({"message": {"title": "title cannot be blank"}}, response_data)
 
