@@ -2,3 +2,4 @@
 omit =
     */python?.?/*
     */site-packages/nose/*
+    */home/andela/.virtualenvs/bl_venv/lib/python3.5/*

@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/pythonGeek/bucketlist_api.svg?branch=master)](https://travis-ci.org/pythonGeek/bucketlist_api)
 [![Coverage Status](https://coveralls.io/repos/github/pythonGeek/bucketlist_api/badge.svg?branch=master)](https://coveralls.io/github/pythonGeek/bucketlist_api?branch=master)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/hyperium/hyper/master/LICENSE)
+[![Issue Count](https://codeclimate.com/github/pythonGeek/bucketlist_api/badges/issue_count.svg)](https://codeclimate.com/github/pythonGeek/bucketlist_api)
 #BucketList Application API
 
 ## Introduction
