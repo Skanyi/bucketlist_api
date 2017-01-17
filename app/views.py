@@ -230,7 +230,7 @@ class BucketListRootAPI(Resource):
         description = args['description']
 
         # testing if the bucketlist exists for this user
-        if BucketList.query.filter_by(title = title, created_by=user_id).first() is not None:
+        if BucketList.query.filter_by(title=title.lower(), created_by=user_id).first() is not None:
             return {'message': 'Bucketlist with that title already exists'}
         new_bucketlist = BucketList(title = title.lower(), description=description, created_by=user_id)
         db.session.add(new_bucketlist)
