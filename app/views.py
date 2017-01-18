@@ -5,23 +5,17 @@ from flask_sqlalchemy import SQLAlchemy
 from app import app, api, db
 from .models import User, BucketList, BucketListItems
 from .serializers import bucketlist_serializer, bucketlistitem_serializer
-from flask_httpauth import HTTPBasicAuth
-from itsdangerous import (TimedJSONWebSignatureSerializer
-                          as Serializer, BadSignature, SignatureExpired)
+from flask_httpauth import HTTPTokenAuth
+from config.config import configuration
 
+auth = HTTPTokenAuth(scheme='Token')
 
-auth = HTTPBasicAuth()
-
-@auth.verify_password
-def verify_password(username_or_token, password):
-    # first try to authenticate by token
-    user = User.verify_auth_token(username_or_token)
-
+@auth.verify_token
+def verify_token(token):
+    #authenticate by token
+    user = User.verify_auth_token(token)
     if not user:
-        # try to authenticate with username/password
-        user = User.query.filter_by(username = username_or_token).first()
-        if not user or not user.verify_password(password):
-            return False
+        return False
     g.user = user
     return True
 

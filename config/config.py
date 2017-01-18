@@ -35,5 +35,6 @@ configuration = {
     'testing': TestingConfig,
     'development': DevelopmentConfig,
     'testing': TestingConfig,
-    'default': Config
+    'default': Config,
+    'SECRET_KEY': os.environ["SECRET_KEY"]
 }

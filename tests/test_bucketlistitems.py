@@ -19,7 +19,7 @@ class BucketListItemsTest(BaseBucketListApiTest):
                                             content_type='application/json')
         response_data = json.loads(response_login.get_data(as_text=True))
         token = response_data.get('Authorization')
-        return {'Authorization': 'Basic %s' % b64encode(bytes(token + ':', 'utf-8')).decode('ascii'),
+        return {'Authorization': 'Token ' + token,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
