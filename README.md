@@ -55,7 +55,7 @@ python server.py db upgrade
 ## Testing
 To run the tests for the app, and see the coverage, run
 ```
-nosetests --with-coverage --cover-package=app
+nosetests --with-coverage
 ```
 
 ### Bucketlist's resources

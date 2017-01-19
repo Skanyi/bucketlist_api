@@ -13,6 +13,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 from config.config import configuration
 
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -52,6 +53,7 @@ class User(db.Model):
     def __repr__(self):
         return '<user_id {}>'.format(self.user_id)
 
+
 class BucketList(db.Model):
     __tablename__ = 'bucketlists'
 
@@ -76,6 +78,7 @@ class BucketList(db.Model):
     def __repr__(self):
         return '<bucketlist_id {}>'.format(self.bucketlist_id)
 
+
 class BucketListItems(db.Model):
     __tablename__ = 'bucketlistsitems'
 
@@ -91,8 +94,6 @@ class BucketListItems(db.Model):
         self.bucketlist_id = bucketlist_id
         self.title = title
         self.done = done
-
-
 
     def __repr__(self):
         return '<item_id {}>'.format(self.item_id)

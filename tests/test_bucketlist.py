@@ -23,7 +23,7 @@ class BucketListTest(BaseBucketListApiTest):
                                           content_type='application/json')
         response_data = json.loads(response_login.get_data(as_text=True))
         token = response_data.get('Authorization')
-        return {"Authorization": 'Token ' + token,
+        return {"Authorization": token,
                 "Accept": 'application/json',
                 "Content-Type": 'application/json',
             }
@@ -131,7 +131,7 @@ class BucketListTest(BaseBucketListApiTest):
                                     headers=self.get_header())
 
         # Access the bucket list with user angie
-        response = self.client.get('/bucketlists/1', headers={'Authorization': 'Token ' + angie_token})
+        response = self.client.get('/bucketlists/1', headers={'Authorization': angie_token})
         response_data = json.loads(response.get_data(as_text=True))
         self.assertIn('not found', response_data['message'])
         self.assert404(response)

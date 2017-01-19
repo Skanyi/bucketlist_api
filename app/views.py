@@ -62,8 +62,8 @@ class UserLoginAPI(Resource):
         user = User.query.filter_by(username = username).first()
         if user and user.verify_password(password):
             token = user.generate_auth_token()
-            return {'Authorization': token.decode('ascii')}
-        return {'message': 'invalid username or password'}
+            return {'Authorization': 'Token ' + token.decode('ascii')}
+        return {'message': 'invalid username or password'}, 401
 
 
 class BucketListAPI(Resource):
@@ -74,7 +74,8 @@ class BucketListAPI(Resource):
         Can also get a specific bucketlist by specifying the id
         '''
         user_id = g.user.user_id
-        bucketlist = BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first()
+        bucketlist = BucketList.query.filter_by(bucketlist_id=bucketlist_id,
+                                                created_by=user_id).first()
 
         if bucketlist:
             return marshal(bucketlist, bucketlist_serializer)
@@ -96,10 +97,11 @@ class BucketListAPI(Resource):
         new_description = args['description']
 
         # testing if the bucketlist with that id exists for this user
-        bucketlist = BucketList.query.filter_by(bucketlist_id = bucketlist_id, created_by=user_id).first()
+        bucketlist = BucketList.query.filter_by(bucketlist_id = bucketlist_id,
+                                                created_by=user_id).first()
 
         if bucketlist is None:
-            return {'message': 'Bucketlist with %s id not found' % bucketlist_id}
+            return {'message': 'Bucketlist with %s id not found' % bucketlist_id}, 404
 
         if args.title:
             bucketlist.title = args.title
@@ -116,7 +118,8 @@ class BucketListAPI(Resource):
         user_id = g.user.user_id
 
         # testing if the bucketlist with that id exists for this user before deletion
-        bucketlist = BucketList.query.filter_by(bucketlist_id = bucketlist_id, created_by=user_id).first()
+        bucketlist = BucketList.query.filter_by(bucketlist_id = bucketlist_id,
+                                                created_by=user_id).first()
 
         if bucketlist is None:
             return {'message': 'Bucketlist with %s id not found' % bucketlist_id}, 404
@@ -131,7 +134,8 @@ class BucketListRootAPI(Resource):
     @auth.login_required
     def get(self):
         '''
-        Gets all the bucketlists created by the user: The user have an option to specify the number of results they want to get.
+        Gets all the bucketlists created by the user: The user have an option to specify
+        the number of results they want to get.
         The default is set to 20 results and the maximum result is 100.
         The user can also search a bucketlist by name.
         '''
@@ -180,9 +184,10 @@ class BucketListRootAPI(Resource):
                         }
                 return response
             else:
-                return {'message': "No bucktetlist with %s found" % search_words}
+                return {'message': "No bucktetlist with %s found" % search_words}, 404
 
-        bucketlists_page = BucketList.query.filter_by(created_by=user_id).paginate(page=page, per_page=limit, error_out=False)
+        bucketlists_page = BucketList.query.filter_by(created_by=user_id).paginate(page=page,
+                                                        per_page=limit, error_out=False)
         total = bucketlists_page.pages
         has_next = bucketlists_page.has_next
         has_previous = bucketlists_page.has_prev
@@ -225,8 +230,9 @@ class BucketListRootAPI(Resource):
 
         # testing if the bucketlist exists for this user
         if BucketList.query.filter_by(title=title.lower(), created_by=user_id).first() is not None:
-            return {'message': 'Bucketlist with that title already exists'}
-        new_bucketlist = BucketList(title = title.lower(), description=description, created_by=user_id)
+            return {'message': 'Bucketlist with that title already exists'}, 409
+        new_bucketlist = BucketList(title = title.lower(), description=description,
+                                    created_by=user_id)
         db.session.add(new_bucketlist)
         db.session.commit()
         return {'message': '%s has been succesfully created' % title}, 201
@@ -234,8 +240,8 @@ class BucketListRootAPI(Resource):
 class BucketListItemsRootAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('title', type = str, required = True,
-            help = 'title cannot be blank', location = 'json')
+        self.reqparse.add_argument('title', type=str, required=True,
+            help = 'title cannot be blank', location='json')
         super(BucketListItemsRootAPI, self).__init__()
 
     @auth.login_required
@@ -251,12 +257,14 @@ class BucketListItemsRootAPI(Resource):
         title = args['title']
 
         # cheking if the bucketlist with the id given exists
-        if BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
-            return {'message': 'BucketList with ID %s not found' % bucketlist_id}
+        if BucketList.query.filter_by(bucketlist_id=bucketlist_id,
+                                        created_by=user_id).first() is None:
+            return {'message': 'BucketList with ID %s not found' % bucketlist_id}, 404
 
         # testing if the bucketlistitems title exists for this user
-        if BucketListItems.query.filter_by(bucketlist_id=bucketlist_id, title = title).first() is not None:
-            return {'message': 'Bucketlistitem name %s already exists' % title}
+        if BucketListItems.query.filter_by(bucketlist_id=bucketlist_id,
+                                            title = title).first() is not None:
+            return {'message': 'Bucketlistitem name %s already exists' % title}, 409
         new_bucketlistitem = BucketListItems(title = title, bucketlist_id=bucketlist_id)
         db.session.add(new_bucketlistitem)
         db.session.commit()
@@ -268,24 +276,26 @@ class BucketListItemAPI(Resource):
     @auth.login_required
     def put(self, bucketlist_id, item_id):
         '''
-        Edits a specific item in a bucketlist:
+        Edits a specific item in a bucketlist of a specific bucketlist:
         '''
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('title', type = str, required = True,
-            help = 'title cannot be blank', location = 'json')
-        self.reqparse.add_argument('done', type = bool, location = 'json')
+        self.reqparse.add_argument('title', type=str, required=True,
+            help = 'title cannot be blank', location='json')
+        self.reqparse.add_argument('done', type = bool, location='json')
         user_id = g.user.user_id
         args = self.reqparse.parse_args()
         title = args['title']
         done = args['done']
 
-        if BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
-            return {'message': 'BucketList with ID %s not found' % bucketlist_id}
+        if BucketList.query.filter_by(bucketlist_id=bucketlist_id,
+                                        created_by=user_id).first() is None:
+            return {'message': 'BucketList with ID %s not found' % bucketlist_id}, 404
 
-        bucketlist_item =  BucketListItems.query.filter_by(bucketlist_id=bucketlist_id, item_id=item_id).first()
+        bucketlist_item =  BucketListItems.query.filter_by(bucketlist_id=bucketlist_id,
+                                                            item_id=item_id).first()
 
         if bucketlist_item is None:
-            return {'message': 'Bucketlistitem with ID %s not found' % item_id}
+            return {'message': 'Bucketlistitem with ID %s not found' % item_id}, 404
 
         if args.title:
             bucketlist_item.title = args.title
@@ -302,10 +312,12 @@ class BucketListItemAPI(Resource):
         user_id = g.user.user_id
 
         # check that the bucketlist item is found on that bucketlist before deleting
-        if BucketList.query.filter_by(bucketlist_id=bucketlist_id, created_by=user_id).first() is None:
-            return {'message': 'BucketList with ID %s not found' % bucketlist_id}
+        if BucketList.query.filter_by(bucketlist_id=bucketlist_id,
+                                        created_by=user_id).first() is None:
+            return {'message': 'BucketList with ID %s not found' % bucketlist_id}, 404
 
-        bucketlist_item = BucketListItems.query.filter_by(bucketlist_id=bucketlist_id, item_id=item_id).first()
+        bucketlist_item = BucketListItems.query.filter_by(bucketlist_id=bucketlist_id,
+                                                            item_id=item_id).first()
         if bucketlist_item is None:
             return {'message': 'Bucketlistitem with ID %s not found' % item_id}, 404
         db.session.delete(bucketlist_item)
