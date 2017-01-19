@@ -3,8 +3,8 @@ from flask import Flask, g, request
 from flask_restful import Resource, reqparse, marshal
 from flask_sqlalchemy import SQLAlchemy
 from app import app, api, db
-from .models import User, BucketList, BucketListItems
-from .serializers import bucketlist_serializer, bucketlistitem_serializer
+from app.models import User, BucketList, BucketListItems
+from app.serializers import bucketlist_serializer, bucketlistitem_serializer
 from flask_httpauth import HTTPTokenAuth
 from config.config import configuration
 
@@ -104,7 +104,7 @@ class BucketListAPI(Resource):
             return {'message': 'Bucketlist with %s id not found' % bucketlist_id}, 404
 
         if args.title:
-            bucketlist.title = args.title
+            bucketlist.title = args.title.lower()
         if args.description:
             bucketlist.description = args.description
         db.session.commit()
