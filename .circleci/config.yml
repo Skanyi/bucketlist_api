@@ -1,0 +1,32 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/mern-starter
+    docker:
+      - image: gcr.io/andela-docker/ci-builder-python:0.0.0
+        environment:
+          TESTING: testing
+    steps:
+      - checkout
+      - setup_remote_docker
+      - restore_cache:
+            key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install dependancies
+          command: |
+            python3 -m venv bl_venv
+            . bl_venv/bin/activate
+            pip install -r requirements.txt
+      - run: 
+          name: Install coveralls
+          command: pip install coveralls
+      - save_cache:
+            key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            paths:
+              - "bl_venv"
+      - run:
+          name: Run tests
+          command: |
+            . bl_venv/bin/activate
+            nosetests --with-coverage
+      
