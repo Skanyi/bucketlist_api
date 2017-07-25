@@ -11,7 +11,7 @@ class UserTest(BaseBucketListApiTest):
     def test_user_already_exist(self):
         user = {"username": "kanyi", "password": "chelsea"}
         response = self.client.post('/auth/register', data=json.dumps(user), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         response = self.client.post('/auth/register', data=json.dumps(user), content_type='application/json')
         response_data = json.loads(response.get_data(as_text=True))
         self.assertIn('user with that username already exists', response_data['message'])
@@ -19,9 +19,9 @@ class UserTest(BaseBucketListApiTest):
     def test_register(self):
         user = {"username": "Kanyi", "password": "chelsea"}
         response = self.client.post('/auth/register', data=json.dumps(user), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.get_data(as_text=True))
-        self.assertIn('message', response_data)
+        self.assertIn('Authorization', response_data)
         self.assertIn('succesfully registered', response_data['message'])
 
     def test_login(self):

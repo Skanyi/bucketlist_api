@@ -41,7 +41,7 @@ class UserRegisterAPI(Resource):
         db.session.add(new_user)
         db.session.commit()
         token = new_user.generate_auth_token()
-        return {'Authorization': 'Token ' + token.decode('ascii')}
+        return {'Authorization': 'Token ' + token.decode('ascii'), 'message': "succesfully registered"}
 
 class UserLoginAPI(Resource):
     def __init__(self):
