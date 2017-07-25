@@ -90,3 +90,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# deployment
+deployment.yml
+secrets.yml
+service.yml

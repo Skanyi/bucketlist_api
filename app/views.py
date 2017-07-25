@@ -33,7 +33,6 @@ class UserRegisterAPI(Resource):
         args = self.reqparse.parse_args()
         username = args['username']
         password = args['password']
-
         # testing if a user exists
         if User.query.filter_by(username = username).first() is not None:
             return {'message': 'user with that username already exists'}
@@ -41,8 +40,8 @@ class UserRegisterAPI(Resource):
         new_user.hash_password(password)
         db.session.add(new_user)
         db.session.commit()
-        return {'message': '%s has been succesfully registered' % username}, 201
-
+        token = new_user.generate_auth_token()
+        return {'Authorization': 'Token ' + token.decode('ascii')}
 
 class UserLoginAPI(Resource):
     def __init__(self):
@@ -62,7 +61,7 @@ class UserLoginAPI(Resource):
         user = User.query.filter_by(username = username).first()
         if user and user.verify_password(password):
             token = user.generate_auth_token()
-            return {'Authorization': 'Token ' + token.decode('ascii')}
+            return {'Authorization': 'Token ' + token.decode('ascii'), 'username': username}
         return {'message': 'invalid username or password'}, 401
 
 
@@ -299,9 +298,9 @@ class BucketListItemAPI(Resource):
 
         if args.title:
             bucketlist_item.title = args.title
-        if args.done:
-            bucketlist_item.done = args.done
+        bucketlist_item.done = args.done
         db.session.commit()
+
         return {'message': 'The bucketlist item with ID %s was updated' % item_id}
 
     @auth.login_required

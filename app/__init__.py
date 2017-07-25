@@ -1,11 +1,13 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
+from flask_cors import CORS, cross_origin
 import os
 from config.config import configuration
 
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app, catch_all_404s=True)
 
 app.config.from_object(configuration['default'])
