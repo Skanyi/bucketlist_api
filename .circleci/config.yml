@@ -9,13 +9,13 @@ jobs:
           TESTING: testing
           PROJECT_NAME: cyborg-staging
           CLUSTER_NAME: staging
-          CLOUDSDK_COMPUTE_ZONE: 
+          CLOUDSDK_COMPUTE_ZONE: us-east1-c
           CONTAINER_NAME: bucketlist
           DEPLOYMENT: bucketlist
           IMAGE: bucketlist
           PROJECT_NAME_PROD: cyborg
           CLUSTER_NAME_PROD: cyborg-prod
-          CLOUDSDK_COMPUTE_ZONE_PROD:
+          CLOUDSDK_COMPUTE_ZONE_PROD: us-east1-b
 
       - image: postgres:9.6-alpine
         environment:
