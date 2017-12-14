@@ -3,6 +3,7 @@
 # Exit on any error
 set -e
 
+export IMG_TAG=$(echo $CIRCLE_SHA1 | cut -c -7)
 # install kubectl
 #  set key and authenticate gcloud
 # configure gcloud
@@ -24,7 +25,7 @@ fi
 echo " Deploying to ${DEPLOYMENT_ENVIRONMENT}"
 # install kubectl and gcloud
   echo " Installing and configuring google cloud"
-  sudo /opt/google-cloud-sdk/bin/gcloud --quiet version
+  sudo curl https://sdk.cloud.google.com | bash
   sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update --version 120.0.0
   sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update --version 120.0.0 kubectl
 

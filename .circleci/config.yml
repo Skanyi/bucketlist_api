@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/mern-starter
+    working_directory: ~/workspace
     docker:
       - image: circleci/python:3.5.3
         environment:
@@ -42,23 +42,27 @@ jobs:
           command: |
             . bl_venv/bin/activate
             nosetests --with-coverage
-  deploy:
-    working_directory: ~/mern-starter
+  deploy-job:
+    working_directory: ~/workspace
     docker:
       - image: circleci/python:3.5.3
     steps:
+      - checkout
       - run:
+          name: Deploy Bucketlist application
           command: ./deploy.sh
-            
 
-           
-
-
-
-      # - deploy:
-      #   name: Deploy Bucketlist application
-      #   command: |
-      #     if [ "$CIRCLE_BRANCH" == "master"] || [ "$CIRCLE_BRANCH" == "develop" ]; then
-      #       ./deploy.sh
-      #     fi
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build
+      - deploy-job:
+          requires:
+            - build
+          filters:
+            branches:
+              only: 
+                - master 
+                - develop    
 
