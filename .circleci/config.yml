@@ -33,9 +33,6 @@ jobs:
             python3 -m venv bl_venv
             . bl_venv/bin/activate
             pip install -r requirements.txt
-      - run: 
-          name: Install coveralls
-          command: pip install coveralls
       - save_cache:
             key: dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}
             paths:
