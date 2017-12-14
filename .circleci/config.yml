@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/mern-starter
     docker:
-      - image: circleci/python:3.5.2
+      - image: circleci/python:3.5.3
         environment:
           DATABASE_URL: postgres://ubuntu@localhost:5432/circle_test
           TESTING: testing
@@ -26,7 +26,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - restore_cache:
-            key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            key: dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           name: Install dependancies
           command: |
@@ -37,7 +37,7 @@ jobs:
           name: Install coveralls
           command: pip install coveralls
       - save_cache:
-            key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            key: dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}
             paths:
               - "bl_venv"
       - run:
@@ -45,11 +45,23 @@ jobs:
           command: |
             . bl_venv/bin/activate
             nosetests --with-coverage
-      
-      - deploy:
-        name: Deploy Bucketlist application
-        command: |
-          if [ "$CIRCLE_BRANCH" === "master"] || [ "$CIRCLE_BRANCH" === "develop" ]; then
-            ./deploy.sh
-          fi
+  deploy:
+    working_directory: ~/mern-starter
+    docker:
+      - image: circleci/python:3.5.3
+    steps:
+      - run:
+          command: ./deploy.sh
+            
+
+           
+
+
+
+      # - deploy:
+      #   name: Deploy Bucketlist application
+      #   command: |
+      #     if [ "$CIRCLE_BRANCH" == "master"] || [ "$CIRCLE_BRANCH" == "develop" ]; then
+      #       ./deploy.sh
+      #     fi
 

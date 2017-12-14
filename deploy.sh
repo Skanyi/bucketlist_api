@@ -13,13 +13,15 @@ set -e
 DOCKER_SOURCE=$HOME/docker-src
 
 DEPLOYMENT_ENVIRONMENT="staging"
-if [ "$CIRCLE_BRANCH" === 'master']; then
+if [ "$CIRCLE_BRANCH" == 'master']; then
   DEPLOYMENT_ENVIRONMENT="production"
   GCLOUD_SERVICE_KEY=$GCLOUD_SERVICE_KEY_PROD
   PROJECT_NAME=$PROJECT_NAME_PROD
   CLUSTER_NAME=$CLUSTER_NAME_PROD
   CLOUDSDK_COMPUTE_ZONE=$CLOUDSDK_COMPUTE_ZONE_PROD
+fi
 
+echo " Deploying to ${DEPLOYMENT_ENVIRONMENT}"
 # install kubectl and gcloud
   echo " Installing and configuring google cloud"
   sudo /opt/google-cloud-sdk/bin/gcloud --quiet version
@@ -58,8 +60,3 @@ echo " Deploying to ${DEPLOYMENT_ENVIRONMENT}"
 /opt/google-cloud-sdk/bin/kubectl config current-context
 /opt/google-cloud-sdk/bin/kubectl set image deployment/${DEPLOYMENT} ${CONTAINER_NAME}=gcr.io/${PROJECT_NAME}/${IMAGE}:$IMG_TAG
 echo " Successfully deployed to ${DEPLOYMENT_ENVIRONMENT} :)"
-
-
-sudo /opt/google-cloud-sdk/bin/gcloud docker push us.gcr.io/${PROJECT_NAME}/hello
-sudo chown -R ubuntu:ubuntu /home/ubuntu/.kube
-kubectl patch deployment docker-hello-google -p '{"spec":{"template":{"spec":{"containers":[{"name":"docker-hello-google","image":"us.gcr.io/circle-ctl-test/hello:'"$CIRCLE_SHA1"'"}]}}}}'
