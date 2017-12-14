@@ -3,9 +3,25 @@ jobs:
   build:
     working_directory: ~/mern-starter
     docker:
-      - image: gcr.io/andela-docker/ci-builder-python:0.0.0
+      - image: circleci/python:3.5.2
         environment:
+          DATABASE_URL: postgres://ubuntu@localhost:5432/circle_test
           TESTING: testing
+          PROJECT_NAME: cyborg-staging
+          CLUSTER_NAME: staging
+          CLOUDSDK_COMPUTE_ZONE: 
+          CONTAINER_NAME: bucketlist
+          DEPLOYMENT: bucketlist
+          IMAGE: bucketlist
+          PROJECT_NAME_PROD: cyborg
+          CLUSTER_NAME_PROD: cyborg-prod
+          CLOUDSDK_COMPUTE_ZONE_PROD:
+
+      - image: postgres:9.6-alpine
+        environment:
+          POSTGRES_USER: ubuntu
+          POSTGRES_DB: circle_test
+          POSTGRES_PASSWORD: ""
     steps:
       - checkout
       - setup_remote_docker
@@ -30,3 +46,10 @@ jobs:
             . bl_venv/bin/activate
             nosetests --with-coverage
       
+      - deploy:
+        name: Deploy Bucketlist application
+        command: |
+          if [ "$CIRCLE_BRANCH" === "master"] || [ "$CIRCLE_BRANCH" === "develop" ]; then
+            ./deploy.sh
+          fi
+
