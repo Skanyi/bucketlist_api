@@ -3,30 +3,21 @@ jobs:
   build:
     working_directory: ~/workspace
     docker:
-      - image: circleci/python:3.5.3
-        environment:
-          DATABASE_URL: postgres://ubuntu@localhost:5432/circle_test
-          TESTING: testing
-          PROJECT_NAME: cyborg-staging
-          CLUSTER_NAME: staging
-          CLOUDSDK_COMPUTE_ZONE: us-east1-c
-          CONTAINER_NAME: bucketlist
-          DEPLOYMENT: bucketlist
-          IMAGE: bucketlist
-          PROJECT_NAME_PROD: cyborg
-          CLUSTER_NAME_PROD: cyborg-prod
-          CLOUDSDK_COMPUTE_ZONE_PROD: us-east1-b
-
+      - image: kanyi/circleci-gcloud-dev
       - image: postgres:9.6-alpine
         environment:
           POSTGRES_USER: ubuntu
           POSTGRES_DB: circle_test
           POSTGRES_PASSWORD: ""
+
     steps:
       - checkout
       - setup_remote_docker
       - restore_cache:
             key: dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install Virtual environment
+          command: apt-get install python3-venv -y
       - run:
           name: Install dependancies
           command: |
@@ -42,10 +33,24 @@ jobs:
           command: |
             . bl_venv/bin/activate
             nosetests --with-coverage
-  deploy-job:
+  
+  deploy:
     working_directory: ~/workspace
     docker:
-      - image: circleci/python:3.5.3
+      - image: kanyi/circleci-gcloud-dev
+        environment:
+          DATABASE_URL: postgres://ubuntu@localhost:5432/circle_test
+          TESTING: testing
+          PROJECT_NAME: cyborg-staging
+          CLUSTER_NAME: staging
+          CLOUDSDK_COMPUTE_ZONE: us-east1-c
+          CONTAINER_NAME: bucketlist
+          DEPLOYMENT: bucketlist
+          IMAGE: bucketlist
+          PROJECT_NAME_PROD: cyborg-189012
+          CLUSTER_NAME_PROD: cyborg-prod
+          CLOUDSDK_COMPUTE_ZONE_PROD: us-east1-b
+
     steps:
       - checkout
       - run:
@@ -57,7 +62,7 @@ workflows:
   build-deploy:
     jobs:
       - build
-      - deploy-job:
+      - deploy:
           requires:
             - build
           filters:
