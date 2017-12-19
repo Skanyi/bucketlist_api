@@ -28,8 +28,7 @@ echo " Deploying to ${DEPLOYMENT_ENVIRONMENT}"
 
 # set key and authenticate gcloud
 echo $GCLOUD_SERVICE_KEY | base64 --decode > ${HOME}/gcloud-service-key.json
-gcloud auth activate-service-account ${ACCOUNT_ID} --key-file ${HOME}/gcloud-service-key.json
-echo ${HOME}/gcloud-service-key.json
+gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
 
 # configure gcloud
 gcloud --quiet config set project $PROJECT_NAME
@@ -39,20 +38,21 @@ gcloud --quiet container clusters get-credentials $CLUSTER_NAME
 
 rm -rf ${DOCKER_SOURCE}
 mkdir -p ${DOCKER_SOURCE}
+echo "Docker source , ${DOCKER_SOURCE}"
 
 # Pull docker repo
 echo " Pulling docker image source from git "
-/usr/bin/git clone --depth=1 -b git@github.com/andela-skanyi/bucketlist_api.git ${DOCKER_SOURCE}
+/usr/bin/git clone --depth=1 git@github.com:andela-skanyi/bucketlist_api.git ${DOCKER_SOURCE}
 echo " Successfully pulled "
 
 echo " Building image"
 gcloud docker -- build -t gcr.io/${PROJECT_NAME}/${IMAGE}:$IMG_TAG  ${DOCKER_SOURCE} > /dev/null
-sudo docker tag -f gcr.io/${PROJECT_NAME}/${IMAGE}:${IMG_TAG} gcr.io/${PROJECT_NAME}/${IMAGE}:latest
+docker tag gcr.io/${PROJECT_NAME}/${IMAGE}:${IMG_TAG} gcr.io/${PROJECT_NAME}/${IMAGE}:latest
 echo " Successfully built"
 
 echo " Pushing image"
-gcloud docker push gcr.io/${PROJECT_NAME}/${IMAGE}:$IMG_TAG
-gcloud docker push gcr.io/${PROJECT_NAME}/${IMAGE}:latest
+gcloud docker -- push gcr.io/${PROJECT_NAME}/${IMAGE}:$IMG_TAG
+gcloud docker -- push gcr.io/${PROJECT_NAME}/${IMAGE}:latest
 echo " Successfully pushed"
 
 echo " Deploying to ${DEPLOYMENT_ENVIRONMENT}"
