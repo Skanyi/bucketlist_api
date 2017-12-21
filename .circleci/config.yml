@@ -53,6 +53,7 @@ jobs:
 
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: Deploy Bucketlist application
           command: ./deploy.sh
