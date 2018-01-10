@@ -41,13 +41,13 @@ jobs:
         environment:
           DATABASE_URL: postgres://ubuntu@localhost:5432/circle_test
           TESTING: testing
-          PROJECT_NAME: cyborg-staging
+          PROJECT_NAME: cyborg-staging-191705
           CLUSTER_NAME: staging
           CLOUDSDK_COMPUTE_ZONE: us-east1-c
           CONTAINER_NAME: bucketlist
           DEPLOYMENT: bucketlist
           IMAGE: bucketlist
-          PROJECT_NAME_PROD: cyborg-189012
+          PROJECT_NAME_PROD: cyborg-prod
           CLUSTER_NAME_PROD: cyborg-prod
           CLOUDSDK_COMPUTE_ZONE_PROD: us-east1-b
 
